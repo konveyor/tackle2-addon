@@ -39,22 +39,22 @@ func main() {
 //
 // mountReport reports mount statistics.
 func mountReport() (err error) {
-	d := &Mount{}
+	d := &Data{}
 	err = addon.DataWith(d)
 	if err != nil {
 		err = &SoftError{Reason: err.Error()}
 		return
 	}
-	if len(d.Names) == 0 {
+	if len(d.Volumes) == 0 {
 		return
 	}
-	for _, name := range d.Names {
+	for _, id := range d.Volumes {
 		var v *api.Volume
-		v, err = addon.Volume.Find(name)
+		v, err = addon.Volume.Get(id)
 		if err != nil {
 			return
 		}
-		path := MountRoot + name
+		path := MountRoot + v.Name
 		cmd := command.Command{Path: "/usr/bin/df"}
 		cmd.Options.Add("-h")
 		cmd.Options.Addf(path)
@@ -78,28 +78,37 @@ func mountReport() (err error) {
 //
 // mountClean deletes the content of the mount.
 func mountClean() (err error) {
-	d := &Mount{}
+	d := &Data{}
 	err = addon.DataWith(d)
 	if err != nil {
 		err = &SoftError{Reason: err.Error()}
 		return
 	}
-	if len(d.Names) == 0 {
+	if len(d.Volumes) == 0 {
 		return
 	}
 	var entries []os.DirEntry
-	for _, name := range d.Names {
-		path := MountRoot + name
+	for _, id := range d.Volumes {
+		var v *api.Volume
+		v, err = addon.Volume.Get(id)
+		if err != nil {
+			return
+		}
+		path := MountRoot + v.Name
 		entries, err = os.ReadDir(path)
 		if err != nil {
-			err = &SoftError{Reason: err.Error()}
+			err = &SoftError{
+				Reason: err.Error(),
+			}
 			return
 		}
 		for _, entry := range entries {
 			p := pathlib.Join(path, entry.Name())
 			err = nas.RmDir(p)
 			if err != nil {
-				err = &SoftError{Reason: err.Error()}
+				err = &SoftError{
+					Reason: err.Error(),
+				}
 				return
 			}
 		}
@@ -108,7 +117,7 @@ func mountClean() (err error) {
 }
 
 //
-// Mount input.
-type Mount struct {
-	Names []string `json:"names"`
+// Data input.
+type Data struct {
+	Volumes []uint `json:"data,omitempty"`
 }
