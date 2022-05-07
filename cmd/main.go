@@ -71,12 +71,14 @@ func mountReport() (err error) {
 		if err != nil {
 			return
 		}
+		addon.Activity("Volume (id=%d) %s updated.", v.ID, v.Name)
 	}
 	return
 }
 
 //
 // mountClean deletes the content of the mount.
+// Then triggers a mountReport to update the volume.
 func mountClean() (err error) {
 	d := &Data{}
 	err = addon.DataWith(d)
@@ -112,7 +114,9 @@ func mountClean() (err error) {
 				return
 			}
 		}
+		addon.Activity("Volume (id=%d) %s cleaned.", v.ID, v.Name)
 	}
+	err = mountReport()
 	return
 }
 
