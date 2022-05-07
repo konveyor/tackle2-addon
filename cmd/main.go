@@ -27,7 +27,7 @@ func main() {
 		switch variant {
 		case "mount:report":
 			err = mountReport()
-		case "mount:clean": // volume:report  volume:clean
+		case "mount:clean":
 			err = mountClean()
 		default:
 			err = &SoftError{Reason: "Variant not supported."}
