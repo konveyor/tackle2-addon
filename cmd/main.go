@@ -119,5 +119,5 @@ func mountClean() (err error) {
 //
 // Data input.
 type Data struct {
-	Volumes []uint `json:"data,omitempty"`
+	Volumes []uint `json:"volumes,omitempty"`
 }
