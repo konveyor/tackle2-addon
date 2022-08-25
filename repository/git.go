@@ -131,6 +131,7 @@ func (r *Git) writeConfig() (err error) {
 			path)
 	}
 	_ = f.Close()
+	addon.Activity("[FILE] Created %s.", path)
 	return
 }
 
@@ -179,6 +180,7 @@ func (r *Git) writeCreds(id *api.Identity) (err error) {
 		}
 	}
 	_ = f.Close()
+	addon.Activity("[FILE] Created %s.", path)
 	return
 }
 

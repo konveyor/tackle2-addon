@@ -169,6 +169,7 @@ func (r *Maven) writeSettings() (path string, err error) {
 			path)
 	}
 	_ = f.Close()
+	addon.Activity("[FILE] Created %s.", path)
 	return
 }
 

@@ -137,6 +137,7 @@ func (r *Subversion) writeConfig() (err error) {
 			path)
 	}
 	_ = f.Close()
+	addon.Activity("[FILE] Created %s.", path)
 	return
 }
 
@@ -217,7 +218,9 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 			err,
 			"path",
 			path)
+		return
 	}
+	addon.Activity("[FILE] Updated %s.", path)
 	return
 }
 

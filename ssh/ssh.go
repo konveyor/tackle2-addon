@@ -122,6 +122,7 @@ func (r *Agent) Add(id *api.Identity, host string) (err error) {
 			path)
 	}
 	_ = f.Close()
+	addon.Activity("[FILE] Created %s.", path)
 	return
 }
 
