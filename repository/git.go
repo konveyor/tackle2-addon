@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"errors"
 	"fmt"
 	liberr "github.com/konveyor/controller/pkg/error"
 	"github.com/konveyor/tackle2-addon/command"
@@ -97,9 +96,8 @@ func (r *Git) URL() (u GitURL) {
 // writeConfig writes config file.
 func (r *Git) writeConfig() (err error) {
 	path := pathlib.Join(HomeDir, ".gitconfig")
-	_, err = os.Stat(path)
-	if !errors.Is(err, os.ErrNotExist) {
-		err = liberr.Wrap(os.ErrExist)
+	found, err := nas.Exists(path)
+	if found || err != nil {
 		return
 	}
 	f, err := os.Create(path)
@@ -143,9 +141,8 @@ func (r *Git) writeCreds(id *api.Identity) (err error) {
 		return
 	}
 	path := pathlib.Join(HomeDir, ".git-credentials")
-	_, err = os.Stat(path)
-	if !errors.Is(err, os.ErrNotExist) {
-		err = liberr.Wrap(os.ErrExist)
+	found, err := nas.Exists(path)
+	if found || err != nil {
 		return
 	}
 	f, err := os.Create(path)
