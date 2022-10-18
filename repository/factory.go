@@ -38,6 +38,11 @@ type Repository interface {
 	With(path string, application *api.Application)
 	Fetch() (err error)
 	Validate() (err error)
+	CreateBranch(name string) (err error)
+	UseBranch(name string) (err error)
+	AddFiles(files []string) (err error)
+	Commit(msg string) (err error)
+	Push() (err error)
 }
 
 //

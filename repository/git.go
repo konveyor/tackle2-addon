@@ -84,6 +84,47 @@ func (r *Git) Fetch() (err error) {
 	return
 }
 
+// CreateBranch creates a branch with the given name
+func (r *Git) CreateBranch(name string) (err error) {
+	cmd := command.Command{Path: "/usr/bin/git"}
+	cmd.Dir = r.Path
+	cmd.Options.Add("branch", name)
+	return cmd.Run()
+}
+
+// UseBranch uses a branch with name
+func (r *Git) UseBranch(name string) (err error) {
+	cmd := command.Command{Path: "/usr/bin/git"}
+	cmd.Dir = r.Path
+	cmd.Options.Add("checkout", name)
+	return cmd.Run()
+}
+
+// AddFiles adds files to staging area
+func (r *Git) AddFiles(files []string) (err error) {
+	cmd := command.Command{Path: "/usr/bin/git"}
+	cmd.Dir = r.Path
+	cmd.Options.Add("add", files...)
+	return cmd.Run()
+}
+
+// Commit records changes to the repo
+func (r *Git) Commit(msg string) (err error) {
+	cmd := command.Command{Path: "/usr/bin/git"}
+	cmd.Dir = r.Path
+	cmd.Options.Add("commit")
+	cmd.Options.Add("--message", msg)
+	return cmd.Run()
+}
+
+// Push changes to server
+func (r *Git) Push() (err error) {
+	cmd := command.Command{Path: "/usr/bin/git"}
+	cmd.Dir = r.Path
+	cmd.Options.Add("push")
+	return cmd.Run()
+}
+
 //
 // URL returns the parsed URL.
 func (r *Git) URL() (u GitURL) {

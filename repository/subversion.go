@@ -89,6 +89,45 @@ func (r *Subversion) Fetch() (err error) {
 	return
 }
 
+// CreateBranch creates a branch with the given name
+func (r *Subversion) CreateBranch(name string) (err error) {
+	return fmt.Errorf("Not yet implemented")
+	// url := r.URL()
+	// insecure, err := addon.Setting.Bool("svn.insecure.enabled")
+	// if err != nil {
+	// 	return
+	// }
+	//
+	// cmd := command.Command{Path: "/usr/bin/svn"}
+	// cmd.Options.Add("--non-interactive")
+	// if insecure {
+	// 	cmd.Options.Add("--trust-server-cert")
+	// }
+	// cmd.Options.Add("copy", url.String(), r.Path)
+	// err = cmd.Run()
+	// return
+}
+
+// UseBranch uses a branch with name
+func (r *Subversion) UseBranch(name string) (err error) {
+	return fmt.Errorf("Not yet implemented")
+}
+
+// AddFiles adds files to staging area
+func (r *Subversion) AddFiles(files []string) (err error) {
+	return fmt.Errorf("Not yet implemented")
+}
+
+// Commit records changes to the repo
+func (r *Subversion) Commit(msg string) (err error) {
+	return fmt.Errorf("Not yet implemented")
+}
+
+// Push changes to server
+func (r *Subversion) Push() (err error) {
+	return fmt.Errorf("Not yet implemented")
+}
+
 //
 // URL returns the parsed URL.
 func (r *Subversion) URL() (u *urllib.URL) {
