@@ -157,7 +157,10 @@ func (r *Git) writeConfig() (err error) {
 	if err != nil {
 		return
 	}
-	s := "[credential]\n"
+	s := "[user]\n"
+	s += "name = Konveyor Dev\n"
+	s += "email = konveyor-dev@googlegroups.com\n"
+	s += "[credential]\n"
 	s += "helper = store\n"
 	s += "[http]\n"
 	s += fmt.Sprintf("sslVerify = %t\n", !insecure)
