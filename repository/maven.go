@@ -13,9 +13,10 @@ import (
 //
 // Maven repository.
 type Maven struct {
-	Application *api.Application
-	BinDir      string
-	M2Dir       string
+	Remote
+	Binary string
+	BinDir string
+	M2Dir  string
 }
 
 //
@@ -35,7 +36,7 @@ func (r *Maven) Fetch(sourceDir string) (err error) {
 //
 // FetchArtifact fetches an application artifact.
 func (r *Maven) FetchArtifact() (err error) {
-	artifact := r.Application.Binary
+	artifact := r.Binary
 	addon.Activity("[MVN] Fetch artifact %s.", artifact)
 	options := command.Options{
 		"dependency:copy",
@@ -130,7 +131,7 @@ func (r *Maven) run(options command.Options) (err error) {
 //
 // writeSettings writes settings file.
 func (r *Maven) writeSettings() (path string, err error) {
-	id, found, err := addon.Application.FindIdentity(r.Application.ID, "maven")
+	id, found, err := r.findIdentity("maven")
 	if err != nil {
 		return
 	}
