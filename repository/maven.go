@@ -14,7 +14,6 @@ import (
 // Maven repository.
 type Maven struct {
 	Remote
-	Binary string
 	BinDir string
 	M2Dir  string
 }
@@ -35,8 +34,7 @@ func (r *Maven) Fetch(sourceDir string) (err error) {
 
 //
 // FetchArtifact fetches an application artifact.
-func (r *Maven) FetchArtifact() (err error) {
-	artifact := r.Binary
+func (r *Maven) FetchArtifact(artifact string) (err error) {
 	addon.Activity("[MVN] Fetch artifact %s.", artifact)
 	options := command.Options{
 		"dependency:copy",
