@@ -127,24 +127,36 @@ func (r *Maven) run(options command.Options) (err error) {
 }
 
 //
+// Settings returns settings XML.
+// Returns "" when identity not found.
+func (r *Maven) Settings() (settings string, err error) {
+	id, found, err := r.findIdentity("maven")
+	if !found || err != nil {
+		return
+	}
+	addon.Activity(
+		"[MVN] Using credentials (id=%d) %s.",
+		id.ID,
+		id.Name)
+	settings, err = r.injectProxy(id)
+	return
+}
+
+//
 // writeSettings writes settings file.
 func (r *Maven) writeSettings() (path string, err error) {
-	id, found, err := r.findIdentity("maven")
+	settings, err := r.Settings()
 	if err != nil {
 		return
 	}
-	if found {
-		addon.Activity(
-			"[MVN] Using credentials (id=%d) %s.",
-			id.ID,
-			id.Name)
-	} else {
+	if settings == "" {
 		return
 	}
 	dir, _ := os.Getwd()
 	path = pathlib.Join(dir, "settings.xml")
-	found, err = nas.Exists(path)
-	if found || err != nil {
+	found, nErr := nas.Exists(path)
+	if found || nErr != nil {
+		err = nErr
 		return
 	}
 	f, err := os.Create(path)
@@ -153,11 +165,6 @@ func (r *Maven) writeSettings() (path string, err error) {
 			err,
 			"path",
 			path)
-		return
-	}
-	settings := id.Settings
-	settings, err = r.injectProxy(id)
-	if err != nil {
 		return
 	}
 	_, err = f.Write([]byte(settings))
