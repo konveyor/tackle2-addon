@@ -146,10 +146,7 @@ func (r *Maven) Settings() (settings string, err error) {
 // writeSettings writes settings file.
 func (r *Maven) writeSettings() (path string, err error) {
 	settings, err := r.Settings()
-	if err != nil {
-		return
-	}
-	if settings == "" {
+	if settings == "" || err != nil {
 		return
 	}
 	dir, _ := os.Getwd()
