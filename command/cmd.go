@@ -60,12 +60,7 @@ func (r *Command) RunWith(ctx context.Context) (err error) {
 		err = &SoftError{
 			Reason: fmt.Sprintf("[CMD] %s failed: %s.", r.Path, err.Error()),
 		}
-		output := string(r.Output)
-		for _, line := range strings.Split(output, "\n") {
-			addon.Activity(
-				"> %s",
-				line)
-		}
+		addon.RawActivity(string(r.Output))
 	} else {
 		err = liberr.Wrap(
 			err,
