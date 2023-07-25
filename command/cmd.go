@@ -16,8 +16,6 @@ var (
 	addon = hub.Addon
 )
 
-type SoftError = hub.SoftError
-
 //
 // Command execution.
 type Command struct {
@@ -54,9 +52,6 @@ func (r *Command) RunWith(ctx context.Context) (err error) {
 			r.Path,
 			err.Error(),
 			string(r.Output))
-		err = &SoftError{
-			Reason: err.Error(),
-		}
 	} else {
 		addon.Activity("[CMD] succeeded.")
 	}
