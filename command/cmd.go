@@ -51,7 +51,7 @@ func (r *Command) RunWith(ctx context.Context) (err error) {
 	r.Output, err = cmd.CombinedOutput()
 	if err != nil {
 		addon.Activity(
-			"[CMD] %s failed: %s.\n",
+			"[CMD] %s failed: %s.\n%s",
 			r.Path,
 			err.Error(),
 			string(r.Output))
