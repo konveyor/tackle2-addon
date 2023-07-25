@@ -7,7 +7,6 @@ package command
 import (
 	"context"
 	"fmt"
-	liberr "github.com/jortel/go-utils/error"
 	hub "github.com/konveyor/tackle2-hub/addon"
 	"os/exec"
 	"strings"
@@ -55,10 +54,9 @@ func (r *Command) RunWith(ctx context.Context) (err error) {
 			r.Path,
 			err.Error(),
 			string(r.Output))
-		err = liberr.Wrap(
-			&SoftError{
-				Reason: err.Error(),
-			})
+		err = &SoftError{
+			Reason: err.Error(),
+		}
 	} else {
 		addon.Activity("[CMD] succeeded.")
 	}
