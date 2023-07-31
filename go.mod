@@ -5,10 +5,8 @@ go 1.18
 require (
 	github.com/clbanning/mxj v1.8.4
 	github.com/jortel/go-utils v0.1.1
-	github.com/konveyor/tackle2-hub v0.1.1-0.20230509193536-e956fefeb39c
+	github.com/konveyor/tackle2-hub v0.2.2-0.20230731153407-22bf2d68128a
 )
-
-replace github.com/konveyor/tackle2-hub => github.com/jortel/tackle2-hub v0.0.0-20230725214853-c6e56f404307
 
 require (
 	github.com/Nerzal/gocloak/v10 v10.0.1 // indirect
