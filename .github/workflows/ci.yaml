@@ -1,0 +1,31 @@
+name: addon-admin CI
+
+on:
+  push:
+  pull_request:
+
+
+jobs:
+  build-and-upload-for-global-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: save addon-admin image
+        run: |
+            docker build . -t quay.io/konveyor/addon-admin:latest
+            docker save -o /tmp/addon-admin.tar quay.io/konveyor/addon-admin:latest
+
+      - name: Upload addon-admin image as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: addon-admin
+          path: /tmp/addon-admin.tar
+          retention-days: 1
+
+  test-integration:
+    needs: build-and-upload-for-global-ci
+    uses: konveyor/ci/.github/workflows/global-ci.yml@main
+    with:
+      component_name: addon-admin
