@@ -141,8 +141,9 @@ type ErrorPattern struct {
 }
 
 func (r *ErrorPattern) Find(output string) (err error) {
-	if r.Regex.Match([]byte(output)) {
-		err = r.Error(output)
+	matched := r.Regex.Find([]byte(output))
+	if matched != nil {
+		err = r.Error(string(matched))
 	}
 	return
 }

@@ -37,7 +37,7 @@ func TestErrorMap(t *testing.T) {
 		ErrorPattern{
 			Regex: regexp.MustCompile(`Authentication failed`),
 			Error: func(s string) (e error) {
-				e = errors.New("auth")
+				e = errors.New(s)
 				return
 			},
 		},
