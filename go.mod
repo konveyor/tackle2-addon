@@ -6,6 +6,7 @@ require (
 	github.com/clbanning/mxj v1.8.4
 	github.com/jortel/go-utils v0.1.1
 	github.com/konveyor/tackle2-hub v0.2.2-0.20230731153407-22bf2d68128a
+	github.com/onsi/gomega v1.27.6
 )
 
 require (
@@ -35,6 +36,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect

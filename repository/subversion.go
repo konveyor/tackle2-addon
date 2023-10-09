@@ -199,14 +199,17 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 		return
 	}
 
-	cmd := command.Command{Path: "/usr/bin/svn"}
+	cmd := command.Command{
+		Path:   "/usr/bin/svn",
+		Silent: true,
+	}
 	cmd.Options.Add("--non-interactive")
 	cmd.Options.Add("--username")
 	cmd.Options.Add(id.User)
 	cmd.Options.Add("--password")
 	cmd.Options.Add(id.Password)
 	cmd.Options.Add("info", r.URL().String())
-	err = cmd.RunSilent()
+	err = cmd.Run()
 	if err != nil {
 		return
 	}

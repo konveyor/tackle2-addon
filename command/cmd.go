@@ -9,6 +9,7 @@ import (
 	"fmt"
 	hub "github.com/konveyor/tackle2-hub/addon"
 	"os/exec"
+	"regexp"
 	"strings"
 )
 
@@ -16,13 +17,22 @@ var (
 	addon = hub.Addon
 )
 
+// AuthMask basic auth mask.
+var AuthMask = MaskPattern{
+	Regex:       regexp.MustCompile(`://[^:]+:[^@]+@`),
+	Replacement: "://###:###@",
+}
+
 //
 // Command execution.
 type Command struct {
-	Options Options
-	Path    string
-	Dir     string
-	Output  []byte
+	Options  Options
+	Mask     Mask
+	ErrorMap ErrorMap
+	Path     string
+	Dir      string
+	Output   string
+	Silent   bool
 }
 
 //
@@ -39,41 +49,34 @@ func (r *Command) Run() (err error) {
 // The command and output are both reported in
 // task Report.Activity.
 func (r *Command) RunWith(ctx context.Context) (err error) {
-	addon.Activity(
-		"[CMD] Running: %s %s",
+	r.activity(
+		"Running: %s %s",
 		r.Path,
-		strings.Join(r.Options, " "))
+		r.Options.String(r.Mask))
 	cmd := exec.CommandContext(ctx, r.Path, r.Options...)
 	cmd.Dir = r.Dir
-	r.Output, err = cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
+	r.Output = r.Mask.Apply(string(output))
 	if err != nil {
-		addon.Activity(
-			"[CMD] %s failed: %s.\n%s",
+		err = r.ErrorMap.Error(err, r.Output)
+		r.activity(
+			"%s failed: %s.\n%s",
 			r.Path,
 			err.Error(),
 			string(r.Output))
 	} else {
-		addon.Activity("[CMD] succeeded.")
+		r.activity("succeeded.")
 	}
 	return
 }
 
 //
-// RunSilent executes the command.
-// Nothing reported in task Report.Activity.
-func (r *Command) RunSilent() (err error) {
-	err = r.RunSilentWith(context.TODO())
-	return
-}
-
-//
-// RunSilentWith executes the command with context.
-// Nothing reported in task Report.Activity.
-func (r *Command) RunSilentWith(ctx context.Context) (err error) {
-	cmd := exec.CommandContext(ctx, r.Path, r.Options...)
-	cmd.Dir = r.Dir
-	err = cmd.Run()
-	return
+// activity reports activity.
+func (r *Command) activity(s string, x ...any) {
+	if !r.Silent {
+		s += "[CMD] "
+		addon.Activity(s, x...)
+	}
 }
 
 //
@@ -81,14 +84,83 @@ func (r *Command) RunSilentWith(ctx context.Context) (err error) {
 type Options []string
 
 //
-// add
+//
+func (a *Options) String(mask Mask) (s string) {
+	var masked []string
+	for _, option := range *a {
+		masked = append(masked, mask.Apply(option))
+	}
+	s = strings.Join(masked, " ")
+	return
+}
+
+//
+// Add adds option.
 func (a *Options) Add(option string, s ...string) {
 	*a = append(*a, option)
 	*a = append(*a, s...)
 }
 
 //
-// add
-func (a *Options) Addf(option string, x ...interface{}) {
+// Addf adds option.
+func (a *Options) Addf(option string, x ...any) {
 	*a = append(*a, fmt.Sprintf(option, x...))
+}
+
+type MaskPattern struct {
+	Regex       *regexp.Regexp
+	Replacement string
+}
+
+//
+// Apply returns masked sting.
+func (m *MaskPattern) Apply(in string) (out string) {
+	out = m.Regex.ReplaceAllString(in, m.Replacement)
+	return
+}
+
+//
+// Mask collection of mask patterns.
+type Mask []MaskPattern
+
+//
+// Apply returns masked sting.
+func (f *Mask) Apply(in string) (out string) {
+	out = in
+	for _, p := range *f {
+		out = p.Apply(out)
+	}
+	return
+}
+
+//
+// ErrorPattern defines errors found in output.
+type ErrorPattern struct {
+	Regex *regexp.Regexp
+	Error func(s string) error
+}
+
+func (r *ErrorPattern) Find(output string) (err error) {
+	if r.Regex.Match([]byte(output)) {
+		err = r.Error(output)
+	}
+	return
+}
+
+//
+// ErrorMap finds/builds errors using pattern matching.
+type ErrorMap []ErrorPattern
+
+//
+// MapError returns masked options.
+func (r *ErrorMap) Error(in error, output string) (out error) {
+	out = in
+	for _, p := range *r {
+		err := p.Find(output)
+		if err != nil {
+			out = err
+			break
+		}
+	}
+	return
 }
