@@ -11,6 +11,7 @@ import (
 	urllib "net/url"
 	"os"
 	pathlib "path"
+	"regexp"
 	"strings"
 )
 
@@ -71,7 +72,33 @@ func (r *Git) Fetch() (err error) {
 	if err != nil {
 		return
 	}
-	cmd := command.Command{Path: "/usr/bin/git"}
+	cmd := command.Command{
+		Path: "/usr/bin/git",
+		ErrorMap: command.ErrorMap{
+			command.ErrorPattern{
+				Regex: regexp.MustCompile(`Authentication failed`),
+				Error: func(s string) (e error) {
+					e = errors.New(s)
+					return
+				},
+			},
+			command.ErrorPattern{
+				Regex: regexp.MustCompile(`Host key verification failed`),
+				Error: func(s string) (e error) {
+					e = errors.New(s)
+					return
+				},
+			},
+			command.ErrorPattern{
+				Regex: regexp.MustCompile(`Error loading key "/addon/.ssh/id_[0-9]+"`),
+				Error: func(s string) (e error) {
+					e = errors.New(s)
+					return
+				},
+			},
+		},
+	}
+	//Error loading key "/addon/.ssh/id_5"
 	cmd.Options.Add("clone", url.String(), r.Path)
 	err = cmd.Run()
 	if err != nil {
