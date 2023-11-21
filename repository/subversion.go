@@ -2,16 +2,18 @@ package repository
 
 import (
 	"fmt"
+	"io"
+	"log"
+	urllib "net/url"
+	"os"
+	pathlib "path"
+	"strings"
+
 	liberr "github.com/jortel/go-utils/error"
 	"github.com/konveyor/tackle2-addon/command"
 	"github.com/konveyor/tackle2-addon/ssh"
 	"github.com/konveyor/tackle2-hub/api"
 	"github.com/konveyor/tackle2-hub/nas"
-	"io"
-	urllib "net/url"
-	"os"
-	pathlib "path"
-	"strings"
 )
 
 // Subversion repository.
@@ -226,6 +228,7 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 			dir)
 		return
 	}
+	log.Printf("files: %#v", files)
 
 	path := pathlib.Join(dir, files[0].Name())
 	f, err := os.OpenFile(path, os.O_RDWR, 0644)
@@ -247,6 +250,7 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 			path)
 		return
 	}
+	log.Printf("content: %#v", content)
 	_, err = f.Seek(0, 0)
 	if err != nil {
 		err = liberr.Wrap(
@@ -268,6 +272,7 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 	s += fmt.Sprintf("V %d\n", len(id.Password))
 	s += fmt.Sprintf("%s\n", id.Password)
 	s += string(content)
+	log.Printf("s %#v", s)
 	_, err = f.Write([]byte(s))
 	if err != nil {
 		err = liberr.Wrap(
