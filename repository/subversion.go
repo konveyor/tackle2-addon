@@ -3,7 +3,6 @@ package repository
 import (
 	"fmt"
 	"io"
-	"log"
 	urllib "net/url"
 	"os"
 	pathlib "path"
@@ -211,7 +210,6 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 
 	cmd := command.Command{Path: "/usr/bin/svn"}
 	cmd.Options.Add("--non-interactive")
-	cmd.Options.Add("--trust-server-cert")
 	if r.Insecure {
 		cmd.Options.Add("--trust-server-cert")
 	}
@@ -220,7 +218,7 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 	cmd.Options.Add("--password")
 	cmd.Options.Add(id.Password)
 	cmd.Options.Add("info", r.URL().String())
-	err = cmd.Run()
+	err = cmd.RunSilent()
 	if err != nil {
 		return
 	}
@@ -238,7 +236,6 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 			dir)
 		return
 	}
-	log.Printf("files: %#v", files)
 
 	path := pathlib.Join(dir, files[0].Name())
 	f, err := os.OpenFile(path, os.O_RDWR, 0644)
@@ -260,7 +257,6 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 			path)
 		return
 	}
-	log.Printf("content: %#v", content)
 	_, err = f.Seek(0, 0)
 	if err != nil {
 		err = liberr.Wrap(
@@ -282,7 +278,6 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 	s += fmt.Sprintf("V %d\n", len(id.Password))
 	s += fmt.Sprintf("%s\n", id.Password)
 	s += string(content)
-	log.Printf("s %#v", s)
 	_, err = f.Write([]byte(s))
 	if err != nil {
 		err = liberr.Wrap(
