@@ -87,7 +87,7 @@ func (r *Command) RunWith(ctx context.Context) (err error) {
 // On error: The command (without arguments) and output are
 // reported in task Report.Activity
 func (r *Command) RunSilent() (err error) {
-	r.Reporter.Verbosity = 0
+	r.Reporter.Verbosity = Error
 	err = r.RunWith(context.TODO())
 	return
 }
