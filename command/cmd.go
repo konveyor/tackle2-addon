@@ -10,6 +10,7 @@ import (
 	"os/exec"
 
 	hub "github.com/konveyor/tackle2-hub/addon"
+	"path"
 )
 
 var (
@@ -56,7 +57,7 @@ func (r *Command) Run() (err error) {
 // task Report.Activity.
 func (r *Command) RunWith(ctx context.Context) (err error) {
 	r.Writer.reporter = &r.Reporter
-	r.Reporter.file, err = addon.File.Touch(r.Path + ".output")
+	r.Reporter.file, err = addon.File.Touch(path.Base(r.Path) + ".output")
 	if err != nil {
 		return
 	}
