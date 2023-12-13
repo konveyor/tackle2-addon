@@ -4,9 +4,11 @@ go 1.18
 
 require (
 	github.com/clbanning/mxj v1.8.4
-	github.com/jortel/go-utils v0.1.1
+	github.com/jortel/go-utils v0.1.2
 	github.com/konveyor/tackle2-hub v0.2.2-0.20230731153407-22bf2d68128a
 )
+
+replace github.com/konveyor/tackle2-hub => github.com/jortel/tackle2-hub v0.0.0-20231213152909-dce049c75d26
 
 require (
 	github.com/Nerzal/gocloak/v10 v10.0.1 // indirect
@@ -64,12 +66,12 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.9 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
-	golang.org/x/crypto v0.7.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/crypto v0.14.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.5.0 // indirect
-	golang.org/x/sys v0.7.0 // indirect
-	golang.org/x/term v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect

@@ -2,6 +2,7 @@ package command
 
 import (
 	"strings"
+	"github.com/konveyor/tackle2-hub/api"
 )
 
 //
@@ -26,6 +27,7 @@ type ReportFilter func(in string) (out string)
 type Reporter struct {
 	Filter    ReportFilter
 	Verbosity int
+	file      *api.File
 	index     int
 }
 
@@ -67,10 +69,10 @@ func (r *Reporter) Error(path string, err error, output []byte) {
 	case Error,
 		Default:
 		addon.Activity(
-			"[CMD] %s failed: %s.\n%s",
+			"[CMD] %s failed: %s",
 			path,
-			err.Error(),
-			output)
+			err.Error())
+		r.append(string(output))
 	case LiveOutput:
 		addon.Activity(
 			"[CMD] %s failed: %s.",
@@ -80,8 +82,7 @@ func (r *Reporter) Error(path string, err error, output []byte) {
 }
 
 //
-// Output reports command output in task Report.Activity.
-// Returns the number of bytes reported.
+// Output reports command output.
 func (r *Reporter) Output(buffer []byte, delimited bool) (reported int) {
 	if r.Filter == nil {
 		r.Filter = func(in string) (out string) {
@@ -103,17 +104,30 @@ func (r *Reporter) Output(buffer []byte, delimited bool) (reported int) {
 			if end != -1 {
 				batch = batch[:end]
 				output := r.Filter(batch)
-				addon.Activity("> %s", output)
+				r.append(output)
 				reported = len(output)
 				r.index += len(batch)
 				r.index++
 			}
 		} else {
 			output := r.Filter(batch)
-			addon.Activity("> %s", output)
+			r.append(output)
 			reported = len(batch)
 			r.index = len(buffer)
 		}
 	}
 	return
+}
+
+//
+// append output.
+func (r *Reporter) append(output string) {
+	if r.file == nil {
+		return
+	}
+	err := addon.File.Patch(r.file.ID, []byte(output))
+	if err != nil {
+		panic(err)
+	}
+	addon.Attach(r.file)
 }

@@ -40,10 +40,13 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 	n = len(p)
 	p = w.Filter(p)
 	w.buffer = append(w.buffer, p...)
-	if w.ended == nil {
-		w.end = make(chan any)
-		w.ended = make(chan any)
-		go w.report()
+	switch w.reporter.Verbosity {
+	case LiveOutput:
+		if w.ended == nil {
+			w.end = make(chan any)
+			w.ended = make(chan any)
+			go w.report()
+		}
 	}
 	return
 }

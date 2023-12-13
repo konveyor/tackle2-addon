@@ -34,12 +34,11 @@ func New(path string) (cmd *Command) {
 //
 // Command execution.
 type Command struct {
-	Verbosity int
-	Options   Options
-	Path      string
-	Dir       string
-	Reporter  Reporter
-	Writer    Writer
+	Options  Options
+	Path     string
+	Dir      string
+	Reporter Reporter
+	Writer   Writer
 }
 
 //
@@ -57,6 +56,10 @@ func (r *Command) Run() (err error) {
 // task Report.Activity.
 func (r *Command) RunWith(ctx context.Context) (err error) {
 	r.Writer.reporter = &r.Reporter
+	r.Reporter.file, err = addon.File.Touch(r.Path + ".output")
+	if err != nil {
+		return
+	}
 	r.Reporter.Run(r.Path, r.Options)
 	defer func() {
 		r.Writer.End()
