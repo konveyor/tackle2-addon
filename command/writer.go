@@ -14,13 +14,8 @@ const (
 )
 
 //
-// OutputFilter filter output.
-type OutputFilter func(in []byte) (out []byte)
-
-//
 // Writer records command output.
 type Writer struct {
-	Filter   OutputFilter
 	reporter *Reporter
 	buffer   []byte
 	backoff  time.Duration
@@ -31,14 +26,7 @@ type Writer struct {
 //
 // Write command output.
 func (w *Writer) Write(p []byte) (n int, err error) {
-	if w.Filter == nil {
-		w.Filter = func(in []byte) (out []byte) {
-			out = in
-			return
-		}
-	}
 	n = len(p)
-	p = w.Filter(p)
 	w.buffer = append(w.buffer, p...)
 	switch w.reporter.Verbosity {
 	case LiveOutput:
@@ -75,13 +63,12 @@ func (w *Writer) report() {
 			ended = true
 		case <-time.After(w.backoff):
 		}
-		n := w.reporter.Output(w.buffer, true)
+		n := w.reporter.Output(w.buffer)
 		w.adjustBackoff(n)
-		if ended {
+		if ended && n == 0 {
 			break
 		}
 	}
-	w.reporter.Output(w.buffer, false)
 	w.ended <- true
 }
 

@@ -21,14 +21,6 @@ var (
 // New returns a command.
 func New(path string) (cmd *Command) {
 	cmd = &Command{Path: path}
-	cmd.Reporter.Filter = func(in string) (out string) {
-		out = in
-		return
-	}
-	cmd.Writer.Filter = func(in []byte) (out []byte) {
-		out = in
-		return
-	}
 	return
 }
 

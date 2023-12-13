@@ -19,13 +19,8 @@ const (
 )
 
 //
-// ReportFilter filter reported output.
-type ReportFilter func(in string) (out string)
-
-//
 // Reporter activity reporter.
 type Reporter struct {
-	Filter    ReportFilter
 	Verbosity int
 	file      *api.File
 	index     int
@@ -72,7 +67,7 @@ func (r *Reporter) Error(path string, err error, output []byte) {
 			"[CMD] %s failed: %s",
 			path,
 			err.Error())
-		r.append(string(output))
+		r.append(output)
 	case LiveOutput:
 		addon.Activity(
 			"[CMD] %s failed: %s.",
@@ -83,13 +78,7 @@ func (r *Reporter) Error(path string, err error, output []byte) {
 
 //
 // Output reports command output.
-func (r *Reporter) Output(buffer []byte, delimited bool) (reported int) {
-	if r.Filter == nil {
-		r.Filter = func(in string) (out string) {
-			out = in
-			return
-		}
-	}
+func (r *Reporter) Output(buffer []byte) (reported int) {
 	switch r.Verbosity {
 	case Disabled:
 	case Error:
@@ -98,22 +87,11 @@ func (r *Reporter) Output(buffer []byte, delimited bool) (reported int) {
 		if r.index >= len(buffer) {
 			return
 		}
-		batch := string(buffer[r.index:])
-		if delimited {
-			end := strings.LastIndex(batch, "\n")
-			if end != -1 {
-				batch = batch[:end]
-				output := r.Filter(batch)
-				r.append(output)
-				reported = len(output)
-				r.index += len(batch)
-				r.index++
-			}
-		} else {
-			output := r.Filter(batch)
-			r.append(output)
-			reported = len(batch)
-			r.index = len(buffer)
+		batch := buffer[r.index:]
+		reported = len(batch)
+		if reported > 0 {
+			r.index += reported
+			r.append(batch)
 		}
 	}
 	return
@@ -121,11 +99,11 @@ func (r *Reporter) Output(buffer []byte, delimited bool) (reported int) {
 
 //
 // append output.
-func (r *Reporter) append(output string) {
+func (r *Reporter) append(batch []byte) {
 	if r.file == nil {
 		return
 	}
-	err := addon.File.Patch(r.file.ID, []byte(output))
+	err := addon.File.Patch(r.file.ID, batch)
 	if err != nil {
 		panic(err)
 	}
