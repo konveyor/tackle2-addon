@@ -59,7 +59,7 @@ func (r *Command) RunWith(ctx context.Context) (err error) {
 		if err != nil {
 			r.Reporter.Error(r.Path, err, r.Writer.buffer)
 		} else {
-			r.Reporter.Succeeded(r.Path)
+			r.Reporter.Succeeded(r.Path, r.Writer.buffer)
 		}
 	}()
 	cmd := exec.CommandContext(ctx, r.Path, r.Options...)

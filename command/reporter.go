@@ -43,12 +43,14 @@ func (r *Reporter) Run(path string, options Options) {
 
 //
 // Succeeded reports command succeeded in task Report.Activity.
-func (r *Reporter) Succeeded(path string) {
+func (r *Reporter) Succeeded(path string, output []byte) {
 	switch r.Verbosity {
 	case Disabled:
 	case Error:
-	case Default,
-		LiveOutput:
+	case Default:
+		addon.Activity("[CMD] %s succeeded.", path)
+		r.append(output)
+	case LiveOutput:
 		addon.Activity("[CMD] %s succeeded.", path)
 	}
 }
