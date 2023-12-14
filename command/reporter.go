@@ -48,10 +48,14 @@ func (r *Reporter) Succeeded(path string, output []byte) {
 	case Disabled:
 	case Error:
 	case Default:
-		addon.Activity("[CMD] %s succeeded.", path)
+		addon.Activity(
+			"[CMD] %s succeeded.",
+			path)
 		r.append(output)
 	case LiveOutput:
-		addon.Activity("[CMD] %s succeeded.", path)
+		addon.Activity(
+			"[CMD] %s succeeded.",
+			path)
 	}
 }
 
