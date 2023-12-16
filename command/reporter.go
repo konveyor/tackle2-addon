@@ -113,5 +113,4 @@ func (r *Reporter) append(batch []byte) {
 	if err != nil {
 		panic(err)
 	}
-	addon.Attach(r.file)
 }

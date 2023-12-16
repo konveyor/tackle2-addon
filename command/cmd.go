@@ -49,11 +49,13 @@ func (r *Command) Run() (err error) {
 // task Report.Activity.
 func (r *Command) RunWith(ctx context.Context) (err error) {
 	r.Writer.reporter = &r.Reporter
-	r.Reporter.file, err = addon.File.Touch(path.Base(r.Path) + ".output")
+	output := path.Base(r.Path) + ".output"
+	r.Reporter.file, err = addon.File.Touch(output)
 	if err != nil {
 		return
 	}
 	r.Reporter.Run(r.Path, r.Options)
+	addon.Attach(r.Reporter.file)
 	defer func() {
 		r.Writer.End()
 		if err != nil {
