@@ -5,10 +5,8 @@ go 1.18
 require (
 	github.com/clbanning/mxj v1.8.4
 	github.com/jortel/go-utils v0.1.2
-	github.com/konveyor/tackle2-hub v0.2.2-0.20230731153407-22bf2d68128a
+	github.com/konveyor/tackle2-hub v0.3.0-rc.2.0.20231219211826-f09d0b24c0e6
 )
-
-replace github.com/konveyor/tackle2-hub => github.com/jortel/tackle2-hub v0.0.0-20231216153645-0500f20f2fbe
 
 require (
 	github.com/Nerzal/gocloak/v10 v10.0.1 // indirect
@@ -45,7 +43,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
-	github.com/leodido/go-urn v1.2.3 // indirect
+	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
