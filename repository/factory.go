@@ -17,6 +17,10 @@ func init() {
 
 // New SCM repository factory.
 func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, err error) {
+	insecure, err := addon.Setting.Bool("svn.insecure.enabled")
+	if err != nil {
+		return
+	}
 	switch remote.Kind {
 	case "subversion":
 		r = &Subversion{
@@ -24,6 +28,7 @@ func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, e
 			Remote: Remote{
 				Repository: remote,
 				Identities: identities,
+				Insecure:   insecure,
 			},
 		}
 	default:
@@ -32,6 +37,7 @@ func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, e
 			Remote: Remote{
 				Repository: remote,
 				Identities: identities,
+				Insecure:   insecure,
 			},
 		}
 	}
@@ -51,6 +57,7 @@ type SCM interface {
 type Remote struct {
 	*api.Repository
 	Identities []api.Ref
+	Insecure   bool
 }
 
 // FindIdentity by kind.
