@@ -26,9 +26,9 @@ func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, e
 			return
 		}
 		r = &Subversion{
-			Path: destDir,
-			Remote: Remote{
-				Repository: remote,
+			Path:   destDir,
+			Remote: *remote,
+			Authenticated: Authenticated{
 				Identities: identities,
 				Insecure:   insecure,
 			},
@@ -39,9 +39,9 @@ func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, e
 			return
 		}
 		r = &Git{
-			Path: destDir,
-			Remote: Remote{
-				Repository: remote,
+			Path:   destDir,
+			Remote: *remote,
+			Authenticated: Authenticated{
 				Identities: identities,
 				Insecure:   insecure,
 			},
@@ -59,15 +59,14 @@ type SCM interface {
 	Commit(files []string, msg string) (err error)
 }
 
-// Remote repository.
-type Remote struct {
-	*api.Repository
+// Authenticated repository.
+type Authenticated struct {
 	Identities []api.Ref
 	Insecure   bool
 }
 
 // FindIdentity by kind.
-func (r *Remote) findIdentity(kind string) (matched *api.Identity, found bool, err error) {
+func (r *Authenticated) findIdentity(kind string) (matched *api.Identity, found bool, err error) {
 	for _, ref := range r.Identities {
 		identity, nErr := addon.Identity.Get(ref.ID)
 		if nErr != nil {

@@ -18,8 +18,9 @@ import (
 
 // Subversion repository.
 type Subversion struct {
-	Remote
-	Path string
+	Authenticated
+	Remote api.Repository
+	Path   string
 }
 
 // Validate settings.
