@@ -18,11 +18,12 @@ func init() {
 
 // New SCM repository factory.
 func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, err error) {
+	var insecure bool
 	switch remote.Kind {
 	case "subversion":
-		insecure, err := addon.Setting.Bool("svn.insecure.enabled")
+		insecure, err = addon.Setting.Bool("svn.insecure.enabled")
 		if err != nil {
-			return r, err
+			return
 		}
 		r = &Subversion{
 			Path: destDir,
@@ -33,9 +34,9 @@ func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, e
 			},
 		}
 	default:
-		insecure, err := addon.Setting.Bool("git.insecure.enabled")
+		insecure, err = addon.Setting.Bool("git.insecure.enabled")
 		if err != nil {
-			return r, err
+			return
 		}
 		r = &Git{
 			Path: destDir,
