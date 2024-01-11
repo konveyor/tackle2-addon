@@ -21,7 +21,7 @@ const emptySettings = `
 
 // Maven repository.
 type Maven struct {
-	Remote
+	Authenticated
 	BinDir string
 	M2Dir  string
 }
