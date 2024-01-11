@@ -25,27 +25,23 @@ func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, e
 		if err != nil {
 			return
 		}
-		r = &Subversion{
-			Path:   destDir,
-			Remote: *remote,
-			Authenticated: Authenticated{
-				Identities: identities,
-				Insecure:   insecure,
-			},
-		}
+		svn := &Subversion{}
+		svn.Path = destDir
+		svn.Remote = *remote
+		svn.Identities = identities
+		svn.Insecure = insecure
+		r = svn
 	default:
 		insecure, err = addon.Setting.Bool("git.insecure.enabled")
 		if err != nil {
 			return
 		}
-		r = &Git{
-			Path:   destDir,
-			Remote: *remote,
-			Authenticated: Authenticated{
-				Identities: identities,
-				Insecure:   insecure,
-			},
-		}
+		git := &Git{}
+		git.Path = destDir
+		git.Remote = *remote
+		git.Identities = identities
+		git.Insecure = insecure
+		r = git
 	}
 	err = r.Validate()
 	return
