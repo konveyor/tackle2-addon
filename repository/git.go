@@ -16,8 +16,9 @@ import (
 
 // Git repository.
 type Git struct {
-	Remote
-	Path string
+	Authenticated
+	Remote api.Repository
+	Path   string
 }
 
 // Validate settings.

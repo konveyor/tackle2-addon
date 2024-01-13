@@ -1,8 +1,8 @@
 package command
 
 import (
-	"strings"
 	"github.com/konveyor/tackle2-hub/api"
+	"strings"
 )
 
 //

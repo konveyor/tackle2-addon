@@ -25,27 +25,23 @@ func New(destDir string, remote *api.Repository, identities []api.Ref) (r SCM, e
 		if err != nil {
 			return
 		}
-		r = &Subversion{
-			Path: destDir,
-			Remote: Remote{
-				Repository: remote,
-				Identities: identities,
-				Insecure:   insecure,
-			},
-		}
+		svn := &Subversion{}
+		svn.Path = destDir
+		svn.Remote = *remote
+		svn.Identities = identities
+		svn.Insecure = insecure
+		r = svn
 	default:
 		insecure, err = addon.Setting.Bool("git.insecure.enabled")
 		if err != nil {
 			return
 		}
-		r = &Git{
-			Path: destDir,
-			Remote: Remote{
-				Repository: remote,
-				Identities: identities,
-				Insecure:   insecure,
-			},
-		}
+		git := &Git{}
+		git.Path = destDir
+		git.Remote = *remote
+		git.Identities = identities
+		git.Insecure = insecure
+		r = git
 	}
 	err = r.Validate()
 	return
@@ -59,15 +55,14 @@ type SCM interface {
 	Commit(files []string, msg string) (err error)
 }
 
-// Remote repository.
-type Remote struct {
-	*api.Repository
+// Authenticated repository.
+type Authenticated struct {
 	Identities []api.Ref
 	Insecure   bool
 }
 
 // FindIdentity by kind.
-func (r *Remote) findIdentity(kind string) (matched *api.Identity, found bool, err error) {
+func (r *Authenticated) findIdentity(kind string) (matched *api.Identity, found bool, err error) {
 	for _, ref := range r.Identities {
 		identity, nErr := addon.Identity.Get(ref.ID)
 		if nErr != nil {
