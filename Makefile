@@ -11,7 +11,7 @@ PKGDIR = $(subst /...,,$(PKG))
 
 all: cmd
 
-fmt:
+fmt: $(GOIMPORTS)
 	$(GOIMPORTS) -w $(PKGDIR)
 
 vet:
