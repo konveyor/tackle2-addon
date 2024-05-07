@@ -129,6 +129,7 @@ func (r *Git) Head() (commit string, err error) {
 		return
 	}
 	commit = string(cmd.Output())
+	commit = strings.TrimSpace(commit)
 	return
 }
 
