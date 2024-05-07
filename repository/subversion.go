@@ -143,6 +143,12 @@ func (r *Subversion) Commit(files []string, msg string) (err error) {
 	return
 }
 
+// Head returns latest commit.
+func (r *Subversion) Head() (commit string, err error) {
+	// TODO: needs implementation.
+	return
+}
+
 // URL returns the parsed URL.
 func (r *Subversion) URL() (u *urllib.URL) {
 	u, _ = urllib.Parse(r.Remote.URL)

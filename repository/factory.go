@@ -57,6 +57,7 @@ type SCM interface {
 	Fetch() (err error)
 	Branch(name string) (err error)
 	Commit(files []string, msg string) (err error)
+	Head() (commit string, err error)
 }
 
 // Remote repository.
