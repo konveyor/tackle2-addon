@@ -69,7 +69,13 @@ func (r *Git) Fetch() (err error) {
 		return
 	}
 	cmd := command.New("/usr/bin/git")
-	cmd.Options.Add("clone", url.String(), r.Path)
+	cmd.Options.Add("clone")
+	cmd.Options.Add("--depth", "1")
+	if r.Remote.Branch != "" {
+		cmd.Options.Add("--single-branch")
+		cmd.Options.Add("--branch", r.Remote.Branch)
+	}
+	cmd.Options.Add(url.String(), r.Path)
 	err = cmd.Run()
 	if err != nil {
 		return
