@@ -124,6 +124,21 @@ func (r *Git) Commit(files []string, msg string) (err error) {
 	return r.push()
 }
 
+// Head returns HEAD commit.
+func (r *Git) Head() (commit string, err error) {
+	cmd := command.New("/usr/bin/git")
+	cmd.Dir = r.Path
+	cmd.Options.Add("rev-parse")
+	cmd.Options.Add("HEAD")
+	err = cmd.Run()
+	if err != nil {
+		return
+	}
+	commit = string(cmd.Output())
+	commit = strings.TrimSpace(commit)
+	return
+}
+
 // push changes to remote.
 func (r *Git) push() (err error) {
 	cmd := command.New("/usr/bin/git")
