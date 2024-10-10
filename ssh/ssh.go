@@ -101,31 +101,6 @@ func (r *Agent) Add(id *api.Identity, host string) (err error) {
 	if err != nil {
 		return
 	}
-	cmd = command.New("/usr/bin/ssh-keyscan")
-	cmd.Options.Add(host)
-	err = cmd.Run()
-	if err != nil {
-		return
-	}
-	known := "/etc/ssh/ssh_known_hosts"
-	f, err = os.OpenFile(
-		known, os.O_RDWR|os.O_APPEND|os.O_CREATE,
-		0600)
-	if err != nil {
-		err = liberr.Wrap(
-			err,
-			"path",
-			path)
-		return
-	}
-	_, err = f.Write(cmd.Output())
-	if err != nil {
-		err = liberr.Wrap(
-			err,
-			"path",
-			path)
-	}
-	_ = f.Close()
 	addon.Activity("[FILE] Created %s.", path)
 	return
 }
