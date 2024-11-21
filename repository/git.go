@@ -86,17 +86,17 @@ func (r *Git) Fetch() (err error) {
 }
 
 // Branch creates a branch with the given name if not exist and switch to it.
-func (r *Git) Branch(name string) (err error) {
+func (r *Git) Branch(ref string) (err error) {
 	cmd := command.New("/usr/bin/git")
 	cmd.Dir = r.Path
-	cmd.Options.Add("checkout", name)
+	cmd.Options.Add("checkout", ref)
 	err = cmd.Run()
 	if err != nil {
 		cmd = command.New("/usr/bin/git")
 		cmd.Dir = r.Path
-		cmd.Options.Add("checkout", "-b", name)
+		cmd.Options.Add("checkout", "-b", ref)
 	}
-	r.Remote.Branch = name
+	r.Remote.Branch = ref
 	return cmd.Run()
 }
 

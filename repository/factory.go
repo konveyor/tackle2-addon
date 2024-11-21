@@ -53,7 +53,7 @@ func New(destDir string, remote *Remote, identities []api.Ref) (r SCM, err error
 type SCM interface {
 	Validate() (err error)
 	Fetch() (err error)
-	Branch(name string) (err error)
+	Branch(ref string) (err error)
 	Commit(files []string, msg string) (err error)
 	Head() (commit string, err error)
 }
