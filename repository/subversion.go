@@ -364,6 +364,9 @@ type SvnURL struct {
 // With initializes with a remote.
 func (u *SvnURL) With(r Remote) (err error) {
 	parsed, err := urllib.Parse(r.URL)
+	if err != nil {
+		return
+	}
 	u.Raw = r.URL
 	u.Branch = r.Branch
 	u.RootPath = r.Path
