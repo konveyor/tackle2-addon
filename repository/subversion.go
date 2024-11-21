@@ -375,7 +375,7 @@ func (u *SvnURL) With(r Remote) (err error) {
 	return
 }
 
-// String returns a URL with branch and base-path injected.
+// String returns a URL with Branch and RootPath appended.
 func (u *SvnURL) String() (s string) {
 	parsed, _ := urllib.Parse(u.Raw)
 	parsed.Path = pathlib.Join(parsed.Path, u.Branch, u.RootPath)
