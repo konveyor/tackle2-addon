@@ -73,7 +73,7 @@ func (r *Subversion) Fetch() (err error) {
 	return
 }
 
-// Branch checks out a branch at `path`.
+// Branch checks out a branch.
 // The branch is created as needed.  The Remote.URL will be set to the branchURL.
 // Example: Branch("/branches/stable")
 func (r *Subversion) Branch(name string) (err error) {
