@@ -42,8 +42,8 @@ func (r *Subversion) Validate() (err error) {
 
 // Fetch clones the repository.
 func (r *Subversion) Fetch() (err error) {
-	url := r.URL()
-	addon.Activity("[SVN] Cloning: %s", url.String())
+	u := r.URL()
+	r.activity("[SVN] Cloning: %s", u.String())
 	id, found, err := r.findIdentity("source")
 	if err != nil {
 		return
@@ -65,11 +65,10 @@ func (r *Subversion) Fetch() (err error) {
 		return
 	}
 	agent := ssh.Agent{}
-	err = agent.Add(id, url.Host)
+	err = agent.Add(id, u.Host)
 	if err != nil {
 		return
 	}
-	_ = nas.RmDir(r.Path)
 	err = r.checkout()
 	return
 }
@@ -104,6 +103,7 @@ func (r *Subversion) Commit(files []string, msg string) (err error) {
 		return
 	}
 	cmd := r.svn()
+	cmd.Dir = r.root()
 	cmd.Options.Add("commit", "-m", msg)
 	err = cmd.Run()
 	return
@@ -125,7 +125,6 @@ func (r *Subversion) URL() (u *SvnURL) {
 // svn returns a svn command.
 func (r *Subversion) svn() (cmd *command.Command) {
 	cmd = command.New("/usr/bin/svn")
-	cmd.Dir = r.Path
 	cmd.Options.Add("--non-interactive")
 	if r.Insecure {
 		cmd.Options.Add("--trust-server-cert")
@@ -133,47 +132,46 @@ func (r *Subversion) svn() (cmd *command.Command) {
 	return
 }
 
+// root returns a path to the cloned repository.
+func (r *Subversion) root() (p string) {
+	p = pathlib.Join(r.Path, r.Remote.Path)
+	return
+}
+
 // checkout the repository.
 func (r *Subversion) checkout() (err error) {
-	url := r.URL()
-	for _, u := range url.Flattened() {
-		cmd := r.svn()
-		cmd.Options.Add("--depth=empty")
-		cmd.Options.Add("checkout", u, r.Path)
-		err = cmd.Run()
-		if err != nil {
-			return
-		}
-	}
+	root := r.root()
+	_ = nas.RmDir(r.Path)
+	_ = nas.MkDir(root, 0777)
+	u := r.URL()
 	cmd := r.svn()
-	cmd.Options.Add("--depth=empty")
-	cmd.Options.Add("checkout", url.String(), r.Path)
+	cmd.Options.Add("checkout", u.String(), root)
 	err = cmd.Run()
 	return
 }
 
 // createBranch create and checkout a branch.
 func (r *Subversion) createBranch(baseURL string) (err error) {
-	url := r.URL()
+	u := r.URL()
 	cmd := r.svn()
 	cmd.Options.Add(
 		"copy",
 		baseURL,
-		url.String(),
+		u.String(),
 		"-m",
-		"Create branch: "+url.String())
+		"Create branch: "+u.String())
 	err = cmd.Run()
 	if err != nil {
 		return
 	}
-	err = r.Fetch()
+	err = r.checkout()
 	return
 }
 
 // addFiles adds files to staging area
 func (r *Subversion) addFiles(files []string) (err error) {
 	cmd := r.svn()
-	cmd.Dir = r.Path
+	cmd.Dir = r.root()
 	cmd.Options.Add("add")
 	cmd.Options.Add("--force", files...)
 	err = cmd.Run()
@@ -214,7 +212,7 @@ func (r *Subversion) writeConfig() (err error) {
 			path)
 	}
 	_ = f.Close()
-	addon.Activity("[FILE] Created %s.", path)
+	r.activity("[FILE] Created %s.", path)
 	return
 }
 
@@ -302,15 +300,15 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 			path)
 		return
 	}
-	addon.Activity("[FILE] Updated %s.", path)
+	r.activity("[FILE] Updated %s.", path)
 	return
 }
 
 // proxy builds the proxy.
 func (r *Subversion) proxy() (proxy string, err error) {
 	kind := ""
-	url := r.URL()
-	switch url.Scheme {
+	u := r.URL()
+	switch u.Scheme {
 	case "http":
 		kind = "http"
 	case "https",
@@ -324,11 +322,11 @@ func (r *Subversion) proxy() (proxy string, err error) {
 		return
 	}
 	for _, h := range p.Excluded {
-		if h == url.Host {
+		if h == u.Host {
 			return
 		}
 	}
-	addon.Activity(
+	r.activity(
 		"[SVN] Using proxy (%d) %s.",
 		p.ID,
 		p.Kind)
@@ -354,6 +352,12 @@ func (r *Subversion) proxy() (proxy string, err error) {
 	return
 }
 
+// activity reports activity.
+func (r *Subversion) activity(entry string, v ...any) {
+	//addon.Activity(entry, v...)
+}
+
+// SvnURL subversion URL.
 type SvnURL struct {
 	Raw      string
 	Branch   string
@@ -362,6 +366,7 @@ type SvnURL struct {
 	Host     string
 }
 
+// With initializes with a remote.
 func (u *SvnURL) With(r Remote) (err error) {
 	parsed, err := urllib.Parse(r.URL)
 	u.Raw = r.URL
@@ -372,6 +377,7 @@ func (u *SvnURL) With(r Remote) (err error) {
 	return
 }
 
+// String returns a URL with branch and base-path injected.
 func (u *SvnURL) String() (s string) {
 	parsed, _ := urllib.Parse(u.Raw)
 	parsed.Path = u.path()
@@ -379,20 +385,7 @@ func (u *SvnURL) String() (s string) {
 	return
 }
 
-func (u *SvnURL) Flattened() (urls []string) {
-	parsed, _ := urllib.Parse(u.Raw)
-	path := strings.TrimPrefix(u.path(), "/")
-	part := strings.Split(path, "/")
-	parsed.Path = ""
-	for _, p := range part {
-		parsed.Path, _ = urllib.JoinPath(parsed.Path, p)
-		urls = append(
-			urls,
-			parsed.String())
-	}
-	return
-}
-
+// path returns the URL path with branch and root-path injected.
 func (u *SvnURL) path() (path string) {
 	parsed, _ := urllib.Parse(u.Raw)
 	path = parsed.Path

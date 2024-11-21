@@ -21,15 +21,19 @@ func TestSvnURL(t *testing.T) {
 	s := u.String()
 	expectStr := "http://svn.corp/project/trunk/eng/product/thing/app_1"
 	g.Expect(expectStr).To(gomega.Equal(s))
-	// Flatten()
-	flat := u.Flattened()
-	expectList := []string{
-		"http://svn.corp/project",
-		"http://svn.corp/project/trunk",
-		"http://svn.corp/project/trunk/eng",
-		"http://svn.corp/project/trunk/eng/product",
-		"http://svn.corp/project/trunk/eng/product/thing",
-		"http://svn.corp/project/trunk/eng/product/thing/app_1",
+}
+
+func TestSvnFetch(t *testing.T) {
+	//g := gomega.NewGomegaWithT(t)
+	remote := Remote{
+		URL:    "http://svn.corp/project",
+		Branch: "trunk",
+		Path:   "eng/product/thing/app_1",
 	}
-	g.Expect(expectList).To(gomega.Equal(flat))
+	// Load.
+	r := Subversion{
+		Remote: remote,
+		Path:   "/tmp/svn/test",
+	}
+	r.checkout()
 }
