@@ -122,7 +122,7 @@ func (r *Subversion) URL() (u *SvnURL) {
 	return
 }
 
-// svn returns a svn command.
+// svn returns an svn command.
 func (r *Subversion) svn() (cmd *command.Command) {
 	cmd = command.New("/usr/bin/svn")
 	cmd.Options.Add("--non-interactive")
