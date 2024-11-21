@@ -381,7 +381,9 @@ func (u *SvnURL) String() (s string) {
 
 func (u *SvnURL) Flattened() (urls []string) {
 	parsed, _ := urllib.Parse(u.Raw)
-	part := strings.Split(u.path(), "/")
+	path := strings.TrimPrefix(u.path(), "/")
+	part := strings.Split(path, "/")
+	parsed.Path = ""
 	for _, p := range part {
 		parsed.Path, _ = urllib.JoinPath(parsed.Path, p)
 		urls = append(
