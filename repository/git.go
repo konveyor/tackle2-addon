@@ -18,7 +18,7 @@ import (
 // Git repository.
 type Git struct {
 	Authenticated
-	Remote api.Repository
+	Remote Remote
 	Path   string
 }
 
