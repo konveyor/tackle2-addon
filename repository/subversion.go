@@ -43,7 +43,7 @@ func (r *Subversion) Validate() (err error) {
 // Fetch clones the repository.
 func (r *Subversion) Fetch() (err error) {
 	u := r.URL()
-	r.activity("[SVN] Cloning: %s", u.String())
+	addon.Activity("[SVN] Cloning: %s", u.String())
 	id, found, err := r.findIdentity("source")
 	if err != nil {
 		return
@@ -212,7 +212,7 @@ func (r *Subversion) writeConfig() (err error) {
 			path)
 	}
 	_ = f.Close()
-	r.activity("[FILE] Created %s.", path)
+	addon.Activity("[FILE] Created %s.", path)
 	return
 }
 
@@ -300,7 +300,7 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 			path)
 		return
 	}
-	r.activity("[FILE] Updated %s.", path)
+	addon.Activity("[FILE] Updated %s.", path)
 	return
 }
 
@@ -326,7 +326,7 @@ func (r *Subversion) proxy() (proxy string, err error) {
 			return
 		}
 	}
-	r.activity(
+	addon.Activity(
 		"[SVN] Using proxy (%d) %s.",
 		p.ID,
 		p.Kind)
@@ -350,11 +350,6 @@ func (r *Subversion) proxy() (proxy string, err error) {
 		"(http-proxy-exceptions = %s\n",
 		strings.Join(p.Excluded, " "))
 	return
-}
-
-// activity reports activity.
-func (r *Subversion) activity(entry string, v ...any) {
-	//addon.Activity(entry, v...)
 }
 
 // SvnURL subversion URL.
@@ -388,12 +383,6 @@ func (u *SvnURL) String() (s string) {
 // path returns the URL path with branch and root-path injected.
 func (u *SvnURL) path() (path string) {
 	parsed, _ := urllib.Parse(u.Raw)
-	path = parsed.Path
-	if u.Branch != "" {
-		path, _ = urllib.JoinPath(path, u.Branch)
-	}
-	if u.RootPath != "" {
-		path, _ = urllib.JoinPath(path, u.RootPath)
-	}
+	path = pathlib.Join(parsed.Path, u.Branch, u.RootPath)
 	return
 }
