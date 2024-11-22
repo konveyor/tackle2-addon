@@ -86,7 +86,7 @@ func (r *Subversion) Branch(ref string) (err error) {
 	if err != nil {
 		return
 	}
-	branch.Remote.URL = ref
+	branch.Remote = Remote{URL: ref}
 	defer func() {
 		if err == nil {
 			r.Remote.URL = branch.Remote.URL
