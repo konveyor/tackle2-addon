@@ -74,8 +74,9 @@ func (r *Subversion) Fetch() (err error) {
 }
 
 // Branch checks out a branch.
-// The branch is created as needed.  The Remote.URL will be set to the ref.
-// The `ref` must be a URL.
+// The branch is created as needed. The `ref` may be either:
+// - fully qualified URL (includes branch and root path)
+// - branch|tag path. (branches/stable).
 func (r *Subversion) Branch(ref string) (err error) {
 	branch := Subversion{
 		Authenticated: r.Authenticated,
@@ -83,8 +84,10 @@ func (r *Subversion) Branch(ref string) (err error) {
 		Path:          r.Path,
 	}
 	_, err = urllib.Parse(ref)
-	if err != nil {
-		return
+	if err == nil {
+		branch.Remote = Remote{URL: ref}
+	} else {
+		branch.Remote.Branch = ref
 	}
 	branch.Remote = Remote{URL: ref}
 	defer func() {
