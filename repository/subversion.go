@@ -7,6 +7,7 @@ import (
 	urllib "net/url"
 	"os"
 	pathlib "path"
+	"regexp"
 	"strings"
 
 	liberr "github.com/jortel/go-utils/error"
@@ -15,6 +16,9 @@ import (
 	"github.com/konveyor/tackle2-hub/api"
 	"github.com/konveyor/tackle2-hub/nas"
 )
+
+// RevisionRegex match revision embedded in `svn info`.
+var RevisionRegex = regexp.MustCompile(`(Revision\:\s+)([\d]+)`)
 
 // Subversion repository.
 type Subversion struct {
@@ -115,9 +119,22 @@ func (r *Subversion) Commit(files []string, msg string) (err error) {
 	return
 }
 
-// Head returns latest commit.
+// Head returns the current revision.
 func (r *Subversion) Head() (commit string, err error) {
-	// TODO: needs implementation.
+	cmd := r.svn()
+	cmd.Dir = r.root()
+	cmd.Options.Add("info", "-r", "HEAD")
+	err = cmd.Run()
+	if err != nil {
+		return
+	}
+	output := cmd.Output()
+	m := RevisionRegex.FindStringSubmatch(string(output))
+	if len(m) == 3 {
+		commit = m[2]
+	} else {
+		err = liberr.New("[SVN] info parser failed.")
+	}
 	return
 }
 
