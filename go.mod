@@ -7,7 +7,7 @@ toolchain go1.22.0
 require (
 	github.com/clbanning/mxj v1.8.4
 	github.com/jortel/go-utils v0.1.4
-	github.com/konveyor/tackle2-hub v0.7.0-alpha.2.0.20250529132952-9acf0b9e58f6
+	github.com/konveyor/tackle2-hub v0.7.0-alpha.2.0.20250603155042-56f863e431f6
 	github.com/onsi/gomega v1.31.1
 )
 

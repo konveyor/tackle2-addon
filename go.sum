@@ -135,8 +135,8 @@ github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+o
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
 github.com/klauspost/cpuid/v2 v2.2.4 h1:acbojRNwl3o09bUq+yDCtZFc1aiwaAAxtcn8YkZXnvk=
 github.com/klauspost/cpuid/v2 v2.2.4/go.mod h1:RVVoqg1df56z8g3pUjL/3lE5UfnlrJX8tyFgg4nqhuY=
-github.com/konveyor/tackle2-hub v0.7.0-alpha.2.0.20250529132952-9acf0b9e58f6 h1:SLiQ+nvYb8rS1bF8cdbRDwUQPF/YGLaTqgmdscFYR+U=
-github.com/konveyor/tackle2-hub v0.7.0-alpha.2.0.20250529132952-9acf0b9e58f6/go.mod h1:RdQChIneyr3sRRg9X9r2f+EYGLVKXVPiFApOSy3Nq0U=
+github.com/konveyor/tackle2-hub v0.7.0-alpha.2.0.20250603155042-56f863e431f6 h1:xUTTOTsE2uUJHWe5HT7T+J4xgSCzUMhCGrwVO9ZxmY8=
+github.com/konveyor/tackle2-hub v0.7.0-alpha.2.0.20250603155042-56f863e431f6/go.mod h1:RdQChIneyr3sRRg9X9r2f+EYGLVKXVPiFApOSy3Nq0U=
 github.com/kr/pretty v0.2.0/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pretty v0.2.1/go.mod h1:ipq/a2n7PKx3OHsz4KJII5eveXtPO4qwEXGdVfWzfnI=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
