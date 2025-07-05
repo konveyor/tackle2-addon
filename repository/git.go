@@ -168,10 +168,6 @@ func (r *Git) URL() (u GitURL) {
 // writeConfig writes config file.
 func (r *Git) writeConfig() (err error) {
 	path := pathlib.Join(Dir, ".gitconfig")
-	found, err := nas.Exists(path)
-	if found || err != nil {
-		return
-	}
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
@@ -180,7 +176,6 @@ func (r *Git) writeConfig() (err error) {
 			path)
 		return
 	}
-
 	proxy, err := r.proxy()
 	if err != nil {
 		return
@@ -189,7 +184,9 @@ func (r *Git) writeConfig() (err error) {
 	s += "name = Konveyor Dev\n"
 	s += "email = konveyor-dev@googlegroups.com\n"
 	s += "[credential]\n"
-	s += "helper = store\n"
+	s += "helper = store --file="
+	s += pathlib.Join(Dir, ".git-credentials")
+	s += "\n"
 	s += "[http]\n"
 	s += fmt.Sprintf("sslVerify = %t\n", !r.Insecure)
 	if proxy != "" {
@@ -213,21 +210,7 @@ func (r *Git) writeCreds(id *api.Identity) (err error) {
 		return
 	}
 	path := pathlib.Join(Dir, ".git-credentials")
-	found, err := nas.Exists(path)
-	if found || err != nil {
-		return
-	}
 	f, err := os.Create(path)
-	if err != nil {
-		err = liberr.Wrap(
-			err,
-			"path",
-			path)
-		return
-	}
-	_, err = f.Write([]byte(
-		fmt.Sprintf("[credential]\n  helper = store --file=%s",
-			path)))
 	if err != nil {
 		err = liberr.Wrap(
 			err,
