@@ -77,6 +77,7 @@ func (r *Git) Fetch() (err error) {
 		cmd.Options.Add("--branch", r.Remote.Branch)
 	}
 	cmd.Options.Add(url.String(), r.Path)
+	r.setEnv(cmd)
 	err = cmd.Run()
 	if err != nil {
 		return
@@ -97,7 +98,9 @@ func (r *Git) Branch(ref string) (err error) {
 		cmd.Options.Add("checkout", "-b", ref)
 	}
 	r.Remote.Branch = ref
-	return cmd.Run()
+	r.setEnv(cmd)
+	err = cmd.Run()
+	return
 }
 
 // addFiles adds files to staging area.
@@ -105,7 +108,9 @@ func (r *Git) addFiles(files []string) (err error) {
 	cmd := command.New("/usr/bin/git")
 	cmd.Dir = r.Path
 	cmd.Options.Add("add", files...)
-	return cmd.Run()
+	r.setEnv(cmd)
+	err = cmd.Run()
+	return
 }
 
 // Commit files and push to remote.
@@ -118,11 +123,13 @@ func (r *Git) Commit(files []string, msg string) (err error) {
 	cmd.Dir = r.Path
 	cmd.Options.Add("commit")
 	cmd.Options.Add("--message", msg)
+	r.setEnv(cmd)
 	err = cmd.Run()
 	if err != nil {
 		return err
 	}
-	return r.push()
+	err = r.push()
+	return
 }
 
 // Head returns HEAD commit.
@@ -131,6 +138,7 @@ func (r *Git) Head() (commit string, err error) {
 	cmd.Dir = r.Path
 	cmd.Options.Add("rev-parse")
 	cmd.Options.Add("HEAD")
+	r.setEnv(cmd)
 	err = cmd.Run()
 	if err != nil {
 		return
@@ -145,7 +153,9 @@ func (r *Git) push() (err error) {
 	cmd := command.New("/usr/bin/git")
 	cmd.Dir = r.Path
 	cmd.Options.Add("push", "--set-upstream", "origin", r.Remote.Branch)
-	return cmd.Run()
+	r.setEnv(cmd)
+	err = cmd.Run()
+	return
 }
 
 // URL returns the parsed URL.
@@ -157,11 +167,7 @@ func (r *Git) URL() (u GitURL) {
 
 // writeConfig writes config file.
 func (r *Git) writeConfig() (err error) {
-	path := pathlib.Join(HomeDir, ".gitconfig")
-	found, err := nas.Exists(path)
-	if found || err != nil {
-		return
-	}
+	path := pathlib.Join(Dir, ".gitconfig")
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
@@ -170,7 +176,6 @@ func (r *Git) writeConfig() (err error) {
 			path)
 		return
 	}
-
 	proxy, err := r.proxy()
 	if err != nil {
 		return
@@ -179,7 +184,9 @@ func (r *Git) writeConfig() (err error) {
 	s += "name = Konveyor Dev\n"
 	s += "email = konveyor-dev@googlegroups.com\n"
 	s += "[credential]\n"
-	s += "helper = store\n"
+	s += "helper = store --file="
+	s += pathlib.Join(Dir, ".git-credentials")
+	s += "\n"
 	s += "[http]\n"
 	s += fmt.Sprintf("sslVerify = %t\n", !r.Insecure)
 	if proxy != "" {
@@ -202,11 +209,7 @@ func (r *Git) writeCreds(id *api.Identity) (err error) {
 	if id.User == "" || id.Password == "" {
 		return
 	}
-	path := pathlib.Join(HomeDir, ".git-credentials")
-	found, err := nas.Exists(path)
-	if found || err != nil {
-		return
-	}
+	path := pathlib.Join(Dir, ".git-credentials")
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
@@ -311,6 +314,16 @@ func (r *Git) checkout() (err error) {
 	cmd.Options.Add("checkout", branch)
 	err = cmd.Run()
 	return
+}
+
+// SetEnv set environment for git command.
+func (r *Git) setEnv(cmd *command.Command) {
+	cmd.Env = append(
+		os.Environ(),
+		"GIT_TERMINAL_PROMPT=0",
+		fmt.Sprintf(
+			"GIT_CONFIG_GLOBAL=%s",
+			pathlib.Join(Dir, ".gitconfig")))
 }
 
 // GitURL git clone URL.

@@ -10,10 +10,12 @@ import (
 var (
 	addon   = hub.Addon
 	HomeDir = ""
+	Dir     = ""
 )
 
 func init() {
 	HomeDir, _ = os.UserHomeDir()
+	Dir, _ = os.Getwd()
 }
 
 type Remote = api.Repository

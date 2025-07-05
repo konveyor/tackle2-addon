@@ -29,6 +29,7 @@ type Command struct {
 	Options  Options
 	Path     string
 	Dir      string
+	Env      []string
 	Reporter Reporter
 	Writer   Writer
 }
@@ -63,6 +64,7 @@ func (r *Command) RunWith(ctx context.Context) (err error) {
 	}()
 	cmd := exec.CommandContext(ctx, r.Path, r.Options...)
 	cmd.Dir = r.Dir
+	cmd.Env = r.Env
 	cmd.Stdout = &r.Writer
 	cmd.Stderr = &r.Writer
 	err = cmd.Start()
