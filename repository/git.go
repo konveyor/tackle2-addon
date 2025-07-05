@@ -340,7 +340,7 @@ func (r *Git) setEnv(cmd *command.Command) {
 		"GIT_TERMINAL_PROMPT=0",
 		fmt.Sprintf(
 			"GIT_CONFIG_GLOBAL=%s",
-			pathlib.Join(HomeDir, ".gitconfig")))
+			pathlib.Join(Dir, ".gitconfig")))
 }
 
 // GitURL git clone URL.
