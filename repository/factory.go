@@ -5,6 +5,7 @@ import (
 
 	hub "github.com/konveyor/tackle2-hub/addon"
 	"github.com/konveyor/tackle2-hub/api"
+	"github.com/pkg/errors"
 )
 
 var (
@@ -19,7 +20,7 @@ func init() {
 type Remote = api.Repository
 
 // New SCM repository factory.
-func New(destDir string, remote *Remote, identity *api.Ref) (r SCM, err error) {
+func New(destDir string, remote *Remote) (r SCM, err error) {
 	var insecure bool
 	switch remote.Kind {
 	case "subversion":
@@ -47,10 +48,6 @@ func New(destDir string, remote *Remote, identity *api.Ref) (r SCM, err error) {
 	if err != nil {
 		return
 	}
-	err = r.Use(identity)
-	if err != nil {
-		return
-	}
 	return
 }
 
@@ -61,7 +58,7 @@ type SCM interface {
 	Branch(ref string) (err error)
 	Commit(files []string, msg string) (err error)
 	Head() (commit string, err error)
-	Use(identity *api.Ref) (err error)
+	Use(option any) (err error)
 }
 
 // Authenticated repository.
@@ -70,15 +67,38 @@ type Authenticated struct {
 	Insecure bool
 }
 
-// Use identity (ref) resolves the reference and sets the identity.
-func (a *Authenticated) Use(identity *api.Ref) (err error) {
-	if identity == nil {
-		return
+// Use option.
+// Options:
+// - *api.Ref
+// - api.Ref
+// - *api.Identity
+// - api.Identity
+func (a *Authenticated) Use(option any) (err error) {
+	var id *api.Identity
+	switch opt := option.(type) {
+	case *api.Ref:
+		if opt == nil {
+			return
+		}
+		id, err = addon.Identity.Get(opt.ID)
+		if err != nil {
+			return
+		}
+		a.Identity = *id
+	case api.Ref:
+		id, err = addon.Identity.Get(opt.ID)
+		if err != nil {
+			return
+		}
+		a.Identity = *id
+	case *api.Identity:
+		if opt != nil {
+			a.Identity = *opt
+		}
+	case api.Identity:
+		a.Identity = opt
+	default:
+		err = errors.Errorf("Invalid option: %T", opt)
 	}
-	id, err := addon.Identity.Get(identity.ID)
-	if err != nil {
-		return
-	}
-	a.Identity = *id
 	return
 }
