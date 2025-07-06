@@ -114,7 +114,7 @@ func (r *Git) Commit(files []string, msg string) (err error) {
 	cmd.Dir = r.Path
 	cmd.Options.Add("commit")
 	cmd.Options.Add("--allow-empty")
-	cmd.Options.Add("--m", msg)
+	cmd.Options.Add("-m", msg)
 	err = cmd.Run()
 	if err != nil {
 		return err
