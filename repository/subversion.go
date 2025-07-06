@@ -255,7 +255,7 @@ func (r *Subversion) writePassword() (err error) {
 		return
 	}
 	dir := pathlib.Join(
-		HomeDir,
+		Dir,
 		".subversion",
 		"auth",
 		"svn.simple")

@@ -155,7 +155,7 @@ func (r *Git) URL() (u GitURL) {
 
 // writeConfig writes config file.
 func (r *Git) writeConfig() (err error) {
-	path := pathlib.Join(HomeDir, ".gitconfig")
+	path := pathlib.Join(Dir, ".gitconfig")
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
@@ -197,7 +197,7 @@ func (r *Git) writeCreds() (err error) {
 	if r.Identity.User == "" || r.Identity.Password == "" {
 		return
 	}
-	path := pathlib.Join(HomeDir, ".git-credentials")
+	path := pathlib.Join(Dir, ".git-credentials")
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
