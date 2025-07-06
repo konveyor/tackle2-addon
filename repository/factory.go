@@ -21,7 +21,7 @@ func init() {
 type Remote = api.Repository
 
 // New SCM repository factory.
-func New(destDir string, remote *Remote, identities []api.Ref) (r SCM, err error) {
+func New(destDir string, remote *Remote, identity *api.Ref) (r SCM, err error) {
 	var insecure bool
 	switch remote.Kind {
 	case "subversion":
@@ -32,7 +32,6 @@ func New(destDir string, remote *Remote, identities []api.Ref) (r SCM, err error
 		svn := &Subversion{}
 		svn.Path = destDir
 		svn.Remote = *remote
-		svn.Identities = identities
 		svn.Insecure = insecure
 		r = svn
 	default:
@@ -43,11 +42,17 @@ func New(destDir string, remote *Remote, identities []api.Ref) (r SCM, err error
 		git := &Git{}
 		git.Path = destDir
 		git.Remote = *remote
-		git.Identities = identities
 		git.Insecure = insecure
 		r = git
 	}
 	err = r.Validate()
+	if err != nil {
+		return
+	}
+	err = r.Use(identity)
+	if err != nil {
+		return
+	}
 	return
 }
 
@@ -58,27 +63,24 @@ type SCM interface {
 	Branch(ref string) (err error)
 	Commit(files []string, msg string) (err error)
 	Head() (commit string, err error)
+	Use(identity *api.Ref) (err error)
 }
 
 // Authenticated repository.
 type Authenticated struct {
-	Identities []api.Ref
-	Insecure   bool
+	Identity api.Identity
+	Insecure bool
 }
 
-// FindIdentity by kind.
-func (r *Authenticated) findIdentity(kind string) (matched *api.Identity, found bool, err error) {
-	for _, ref := range r.Identities {
-		identity, nErr := addon.Identity.Get(ref.ID)
-		if nErr != nil {
-			err = nErr
-			return
-		}
-		if identity.Kind == kind {
-			found = true
-			matched = identity
-			break
-		}
+// Use identity (ref) resolves the reference and sets the identity.
+func (a *Authenticated) Use(identity *api.Ref) (err error) {
+	if identity == nil {
+		return
 	}
+	id, err := addon.Identity.Get(identity.ID)
+	if err != nil {
+		return
+	}
+	a.Identity = *id
 	return
 }

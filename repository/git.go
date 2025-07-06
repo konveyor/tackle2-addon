@@ -44,28 +44,22 @@ func (r *Git) Fetch() (err error) {
 	url := r.URL()
 	addon.Activity("[GIT] Cloning: %s", url.String())
 	_ = nas.RmDir(r.Path)
-	id, found, err := r.findIdentity("source")
-	if err != nil {
-		return
-	}
-	if found {
+	if r.Identity.ID != 0 {
 		addon.Activity(
 			"[GIT] Using credentials (id=%d) %s.",
-			id.ID,
-			id.Name)
-	} else {
-		id = &api.Identity{}
+			r.Identity.ID,
+			r.Identity.Name)
 	}
 	err = r.writeConfig()
 	if err != nil {
 		return
 	}
-	err = r.writeCreds(id)
+	err = r.writeCreds()
 	if err != nil {
 		return
 	}
 	agent := ssh.Agent{}
-	err = agent.Add(id, url.Host)
+	err = agent.Add(&r.Identity, url.Host)
 	if err != nil {
 		return
 	}
@@ -205,8 +199,8 @@ func (r *Git) writeConfig() (err error) {
 }
 
 // writeCreds writes credentials (store) file.
-func (r *Git) writeCreds(id *api.Identity) (err error) {
-	if id.User == "" || id.Password == "" {
+func (r *Git) writeCreds() (err error) {
+	if r.Identity.User == "" || r.Identity.Password == "" {
 		return
 	}
 	path := pathlib.Join(Dir, ".git-credentials")
@@ -225,12 +219,12 @@ func (r *Git) writeCreds(id *api.Identity) (err error) {
 	} {
 		entry := scheme
 		entry += "://"
-		if id.User != "" {
-			entry += id.User
+		if r.Identity.User != "" {
+			entry += r.Identity.User
 			entry += ":"
 		}
-		if id.Password != "" {
-			entry += id.Password
+		if r.Identity.Password != "" {
+			entry += r.Identity.Password
 			entry += "@"
 		}
 		entry += url.Host

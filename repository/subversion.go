@@ -48,28 +48,22 @@ func (r *Subversion) Validate() (err error) {
 func (r *Subversion) Fetch() (err error) {
 	u := r.URL()
 	addon.Activity("[SVN] Cloning: %s", u.String())
-	id, found, err := r.findIdentity("source")
-	if err != nil {
-		return
-	}
-	if found {
+	if r.Identity.ID != 0 {
 		addon.Activity(
 			"[SVN] Using credentials (id=%d) %s.",
-			id.ID,
-			id.Name)
-	} else {
-		id = &api.Identity{}
+			r.Identity.ID,
+			r.Identity.Name)
 	}
 	err = r.writeConfig()
 	if err != nil {
 		return
 	}
-	err = r.writePassword(id)
+	err = r.writePassword()
 	if err != nil {
 		return
 	}
 	agent := ssh.Agent{}
-	err = agent.Add(id, u.Host)
+	err = agent.Add(&r.Identity, u.Host)
 	if err != nil {
 		return
 	}
@@ -201,7 +195,7 @@ func (r *Subversion) addFiles(files []string) (err error) {
 	return
 }
 
-// writeConfig writes config file.
+// writeConfig writes configuration file.
 func (r *Subversion) writeConfig() (err error) {
 	path := pathlib.Join(
 		HomeDir,
@@ -240,8 +234,8 @@ func (r *Subversion) writeConfig() (err error) {
 }
 
 // writePassword injects the password into: auth/svn.simple.
-func (r *Subversion) writePassword(id *api.Identity) (err error) {
-	if id.User == "" || id.Password == "" {
+func (r *Subversion) writePassword() (err error) {
+	if r.Identity.User == "" || r.Identity.Password == "" {
 		return
 	}
 
@@ -251,9 +245,9 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 		cmd.Options.Add("--trust-server-cert")
 	}
 	cmd.Options.Add("--username")
-	cmd.Options.Add(id.User)
+	cmd.Options.Add(r.Identity.User)
 	cmd.Options.Add("--password")
-	cmd.Options.Add(id.Password)
+	cmd.Options.Add(r.Identity.Password)
 	cmd.Options.Add("info", r.URL().String())
 	err = cmd.RunSilent()
 	if err != nil {
@@ -308,12 +302,12 @@ func (r *Subversion) writePassword(id *api.Identity) (err error) {
 	s += "simple\n"
 	s += "K 8\n"
 	s += "username\n"
-	s += fmt.Sprintf("V %d\n", len(id.User))
-	s += fmt.Sprintf("%s\n", id.User)
+	s += fmt.Sprintf("V %d\n", len(r.Identity.User))
+	s += fmt.Sprintf("%s\n", r.Identity.User)
 	s += "K 8\n"
 	s += "password\n"
-	s += fmt.Sprintf("V %d\n", len(id.Password))
-	s += fmt.Sprintf("%s\n", id.Password)
+	s += fmt.Sprintf("V %d\n", len(r.Identity.Password))
+	s += fmt.Sprintf("%s\n", r.Identity.Password)
 	s += string(content)
 	_, err = f.Write([]byte(s))
 	if err != nil {
