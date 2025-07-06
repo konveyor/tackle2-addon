@@ -20,7 +20,12 @@ func init() {
 type Remote = api.Repository
 
 // New SCM repository factory.
-func New(destDir string, remote *Remote) (r SCM, err error) {
+// Options:
+// - *api.Ref
+// - api.Ref
+// - *api.Identity
+// - api.Identity
+func New(destDir string, remote *Remote, option ...any) (r SCM, err error) {
 	var insecure bool
 	switch remote.Kind {
 	case "subversion":
@@ -47,6 +52,12 @@ func New(destDir string, remote *Remote) (r SCM, err error) {
 	err = r.Validate()
 	if err != nil {
 		return
+	}
+	for _, opt := range option {
+		err = r.Use(opt)
+		if err != nil {
+			return
+		}
 	}
 	return
 }
