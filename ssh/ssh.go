@@ -64,10 +64,6 @@ func (r *Agent) Add(id *api.Identity, host string) (err error) {
 	path := pathlib.Join(
 		SSHDir,
 		suffix)
-	found, err := nas.Exists(path)
-	if found || err != nil {
-		return
-	}
 	f, err := os.OpenFile(
 		path,
 		os.O_RDWR|os.O_CREATE,
