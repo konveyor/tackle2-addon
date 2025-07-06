@@ -23,9 +23,7 @@ var (
 
 func init() {
 	Dir, _ = os.Getwd()
-	SSHDir = pathlib.Join(
-		Dir,
-		".ssh")
+	SSHDir = pathlib.Join(Dir, ".ssh")
 }
 
 // Agent agent.
