@@ -137,11 +137,23 @@ func (r *Git) Head() (commit string, err error) {
 	return
 }
 
+// git returns git command.
+func (r *Git) git() (cmd *command.Command) {
+	cmd = command.New("/usr/bin/git")
+	cmd.Env = append(
+		os.Environ(),
+		"GIT_TERMINAL_PROMPT=0",
+		"GIT_TRACE_SETUP=1",
+		"GIT_TRACE=1",
+		"HOME="+Dir)
+	return
+}
+
 // push changes to remote.
 func (r *Git) push() (err error) {
 	cmd := r.git()
 	cmd.Dir = r.Path
-	cmd.Options.Add("push", "--set-upstream", "origin", r.Remote.Branch)
+	cmd.Options.Add("push", "origin", "HEAD")
 	err = cmd.Run()
 	return
 }
@@ -173,7 +185,7 @@ func (r *Git) writeConfig() (err error) {
 	s += "email = konveyor-dev@googlegroups.com\n"
 	s += "[credential]\n"
 	s += "helper = store --file="
-	s += pathlib.Join(HomeDir, ".git-credentials")
+	s += pathlib.Join(Dir, ".git-credentials")
 	s += "\n"
 	s += "[http]\n"
 	s += fmt.Sprintf("sslVerify = %t\n", !r.Insecure)
@@ -301,13 +313,6 @@ func (r *Git) checkout() (err error) {
 	cmd := r.git()
 	cmd.Options.Add("checkout", branch)
 	err = cmd.Run()
-	return
-}
-
-// git returns git command.
-func (r *Git) git() (cmd *command.Command) {
-	cmd = command.New("/usr/bin/git")
-	cmd.Env = append(os.Environ(), "HOME="+Dir)
 	return
 }
 
