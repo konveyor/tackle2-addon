@@ -87,7 +87,7 @@ func (r *Agent) Add(id *api.Identity, host string) (err error) {
 			path)
 	}
 	_ = f.Close()
-	err = r.writeAsk(id)
+	ask, err := r.writeAsk(id)
 	if err != nil {
 		return
 	}
@@ -96,7 +96,11 @@ func (r *Agent) Add(id *api.Identity, host string) (err error) {
 		time.Second)
 	defer fn()
 	cmd := command.New("/usr/bin/ssh-add")
-	cmd.Env = append(os.Environ(), "HOME="+Dir)
+	cmd.Env = append(
+		os.Environ(),
+		"DISPLAY=:0",
+		"SSH_ASKPASS="+ask,
+		"HOME="+Dir)
 	cmd.Options.Add(path)
 	err = cmd.RunWith(ctx)
 	if err != nil {
@@ -115,8 +119,8 @@ func (r *Agent) format(in string) (out string) {
 }
 
 // writeAsk writes script that returns the key password.
-func (r *Agent) writeAsk(id *api.Identity) (err error) {
-	path := "/tmp/ask.sh"
+func (r *Agent) writeAsk(id *api.Identity) (path string, err error) {
+	path = "/tmp/ask.sh"
 	f, err := os.OpenFile(
 		path,
 		os.O_RDWR|os.O_CREATE,
@@ -128,9 +132,11 @@ func (r *Agent) writeAsk(id *api.Identity) (err error) {
 			path)
 		return
 	}
-	script := fmt.Sprintf(
-		"#!/bin/sh\necho '%s'",
-		id.Password)
+	defer func() {
+		_ = f.Close()
+	}()
+	script := "#!/bin/sh\n"
+	script += "echo " + id.Password
 	_, err = f.Write([]byte(script))
 	if err != nil {
 		err = liberr.Wrap(
@@ -138,8 +144,5 @@ func (r *Agent) writeAsk(id *api.Identity) (err error) {
 			"path",
 			path)
 	}
-	_ = os.Setenv("SSH_ASKPASS", path)
-	_ = os.Setenv("DISPLAY", "1")
-	_ = f.Close()
 	return
 }
