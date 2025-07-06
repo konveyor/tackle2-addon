@@ -199,7 +199,7 @@ func (r *Subversion) addFiles(files []string) (err error) {
 // writeConfig writes configuration file.
 func (r *Subversion) writeConfig() (err error) {
 	path := pathlib.Join(
-		HomeDir,
+		Dir,
 		".subversion",
 		"servers")
 	found, err := nas.Exists(path)

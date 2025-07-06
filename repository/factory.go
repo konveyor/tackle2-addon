@@ -8,13 +8,11 @@ import (
 )
 
 var (
-	addon   = hub.Addon
-	HomeDir = ""
-	Dir     = ""
+	addon = hub.Addon
+	Dir   = ""
 )
 
 func init() {
-	HomeDir, _ = os.UserHomeDir()
 	Dir, _ = os.Getwd()
 }
 

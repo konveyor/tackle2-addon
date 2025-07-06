@@ -16,17 +16,16 @@ import (
 )
 
 var (
-	addon   = hub.Addon
-	HomeDir = ""
-	SSHDir  = ""
+	addon  = hub.Addon
+	Dir    = ""
+	SSHDir = ""
 )
 
 func init() {
-	HomeDir, _ = os.UserHomeDir()
+	Dir, _ = os.Getwd()
 	SSHDir = pathlib.Join(
-		HomeDir,
+		Dir,
 		".ssh")
-
 }
 
 // Agent agent.
@@ -38,6 +37,7 @@ func (r *Agent) Start() (err error) {
 	pid := os.Getpid()
 	socket := fmt.Sprintf("/tmp/agent.%d", pid)
 	cmd := command.New("/usr/bin/ssh-agent")
+	cmd.Env = append(os.Environ(), "HOME="+Dir)
 	cmd.Options.Add("-a", socket)
 	err = cmd.Run()
 	if err != nil {
@@ -96,6 +96,7 @@ func (r *Agent) Add(id *api.Identity, host string) (err error) {
 		time.Second)
 	defer fn()
 	cmd := command.New("/usr/bin/ssh-add")
+	cmd.Env = append(os.Environ(), "HOME="+Dir)
 	cmd.Options.Add(path)
 	err = cmd.RunWith(ctx)
 	if err != nil {
