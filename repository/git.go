@@ -3,9 +3,11 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"hash/fnv"
 	urllib "net/url"
 	"os"
 	pathlib "path"
+	"strconv"
 	"strings"
 
 	liberr "github.com/jortel/go-utils/error"
@@ -49,6 +51,11 @@ func (r *Git) Fetch() (err error) {
 			"[GIT] Using credentials (id=%d) %s.",
 			r.Identity.ID,
 			r.Identity.Name)
+	}
+	err = nas.MkDir(r.home(), 0644)
+	if err != nil {
+		err = liberr.Wrap(err)
+		return
 	}
 	err = r.writeConfig()
 	if err != nil {
@@ -146,7 +153,7 @@ func (r *Git) git() (cmd *command.Command) {
 		"GIT_TERMINAL_PROMPT=0",
 		"GIT_TRACE_SETUP=1",
 		"GIT_TRACE=1",
-		"HOME="+Dir)
+		"HOME="+r.home())
 	return
 }
 
@@ -168,7 +175,7 @@ func (r *Git) URL() (u GitURL) {
 
 // writeConfig writes config file.
 func (r *Git) writeConfig() (err error) {
-	path := pathlib.Join(Dir, ".gitconfig")
+	path := pathlib.Join(r.home(), ".gitconfig")
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
@@ -186,7 +193,7 @@ func (r *Git) writeConfig() (err error) {
 	s += "email = konveyor-dev@googlegroups.com\n"
 	s += "[credential]\n"
 	s += "helper = store --file="
-	s += pathlib.Join(Dir, ".git-credentials")
+	s += pathlib.Join(r.home(), ".git-credentials")
 	s += "\n"
 	s += "[http]\n"
 	s += fmt.Sprintf("sslVerify = %t\n", !r.Insecure)
@@ -210,7 +217,7 @@ func (r *Git) writeCreds() (err error) {
 	if r.Identity.User == "" || r.Identity.Password == "" {
 		return
 	}
-	path := pathlib.Join(Dir, ".git-credentials")
+	path := pathlib.Join(r.home(), ".git-credentials")
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
@@ -314,6 +321,19 @@ func (r *Git) checkout() (err error) {
 	cmd := r.git()
 	cmd.Options.Add("checkout", branch)
 	err = cmd.Run()
+	return
+}
+
+// home returns the Git home directory path.
+func (r *Git) home() (home string) {
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(r.Remote.URL))
+	n := h.Sum32()
+	digest := strconv.FormatUint(uint64(n), 16)
+	home = pathlib.Join(
+		Dir,
+		".git",
+		digest)
 	return
 }
 

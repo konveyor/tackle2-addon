@@ -3,11 +3,13 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io"
 	urllib "net/url"
 	"os"
 	pathlib "path"
 	"regexp"
+	"strconv"
 	"strings"
 
 	liberr "github.com/jortel/go-utils/error"
@@ -53,6 +55,11 @@ func (r *Subversion) Fetch() (err error) {
 			"[SVN] Using credentials (id=%d) %s.",
 			r.Identity.ID,
 			r.Identity.Name)
+	}
+	err = nas.MkDir(r.home(), 0644)
+	if err != nil {
+		err = liberr.Wrap(err)
+		return
 	}
 	err = r.writeConfig()
 	if err != nil {
@@ -142,7 +149,7 @@ func (r *Subversion) URL() (u *SvnURL) {
 // svn returns an svn command.
 func (r *Subversion) svn() (cmd *command.Command) {
 	cmd = command.New("/usr/bin/svn")
-	cmd.Env = append(os.Environ(), "HOME="+Dir)
+	cmd.Env = append(os.Environ(), "HOME="+r.home())
 	cmd.Options.Add("--non-interactive")
 	if r.Insecure {
 		cmd.Options.Add("--trust-server-cert")
@@ -199,7 +206,7 @@ func (r *Subversion) addFiles(files []string) (err error) {
 // writeConfig writes configuration file.
 func (r *Subversion) writeConfig() (err error) {
 	path := pathlib.Join(
-		Dir,
+		r.home(),
 		".subversion",
 		"servers")
 	found, err := nas.Exists(path)
@@ -239,7 +246,6 @@ func (r *Subversion) writePassword() (err error) {
 	if r.Identity.User == "" || r.Identity.Password == "" {
 		return
 	}
-
 	cmd := command.New("/usr/bin/svn")
 	cmd.Options.Add("--non-interactive")
 	if r.Insecure {
@@ -255,11 +261,10 @@ func (r *Subversion) writePassword() (err error) {
 		return
 	}
 	dir := pathlib.Join(
-		Dir,
+		r.home(),
 		".subversion",
 		"auth",
 		"svn.simple")
-
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		err = liberr.Wrap(
@@ -268,7 +273,6 @@ func (r *Subversion) writePassword() (err error) {
 			dir)
 		return
 	}
-
 	path := pathlib.Join(dir, files[0].Name())
 	f, err := os.OpenFile(path, os.O_RDWR, 0644)
 	if err != nil {
@@ -367,6 +371,19 @@ func (r *Subversion) proxy() (proxy string, err error) {
 	proxy += fmt.Sprintf(
 		"(http-proxy-exceptions = %s\n",
 		strings.Join(p.Excluded, " "))
+	return
+}
+
+// home returns the SVN home directory path.
+func (r *Subversion) home() (home string) {
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(r.Remote.URL))
+	n := h.Sum32()
+	digest := strconv.FormatUint(uint64(n), 16)
+	home = pathlib.Join(
+		Dir,
+		".svn",
+		digest)
 	return
 }
 
