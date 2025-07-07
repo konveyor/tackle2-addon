@@ -210,10 +210,6 @@ func (r *Subversion) writeConfig() (err error) {
 		r.home(),
 		".subversion",
 		"servers")
-	found, err := nas.Exists(path)
-	if found || err != nil {
-		return
-	}
 	err = nas.MkDir(pathlib.Dir(path), 0755)
 	if err != nil {
 		return
@@ -247,11 +243,7 @@ func (r *Subversion) writePassword() (err error) {
 	if r.Identity.User == "" || r.Identity.Password == "" {
 		return
 	}
-	cmd := command.New("/usr/bin/svn")
-	cmd.Options.Add("--non-interactive")
-	if r.Insecure {
-		cmd.Options.Add("--trust-server-cert")
-	}
+	cmd := r.svn()
 	cmd.Options.Add("--username")
 	cmd.Options.Add(r.Identity.User)
 	cmd.Options.Add("--password")
