@@ -44,6 +44,7 @@ func (r *Git) Validate() (err error) {
 // Fetch clones the repository.
 func (r *Git) Fetch() (err error) {
 	url := r.URL()
+	addon.Activity("[GIT] Home (directory): %s", r.home())
 	addon.Activity("[GIT] Cloning: %s", url.String())
 	_ = nas.RmDir(r.Path)
 	if r.Identity.ID != 0 {

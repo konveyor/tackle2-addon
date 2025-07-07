@@ -33,6 +33,7 @@ type Agent struct {
 // Start the ssh-agent.
 func (r *Agent) Start() (err error) {
 	pid := os.Getpid()
+	addon.Activity("[SSH] Home (directory): %s", Dir)
 	socket := fmt.Sprintf("/tmp/agent.%d", pid)
 	cmd := command.New("/usr/bin/ssh-agent")
 	cmd.Env = append(os.Environ(), "HOME="+Dir)
