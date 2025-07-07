@@ -56,7 +56,7 @@ func (r *Subversion) Fetch() (err error) {
 			r.Identity.ID,
 			r.Identity.Name)
 	}
-	err = nas.MkDir(r.home(), 0644)
+	err = nas.MkDir(r.home(), 0755)
 	if err != nil {
 		err = liberr.Wrap(err)
 		return
