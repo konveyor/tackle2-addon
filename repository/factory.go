@@ -5,21 +5,27 @@ import (
 
 	hub "github.com/konveyor/tackle2-hub/addon"
 	"github.com/konveyor/tackle2-hub/api"
+	"github.com/pkg/errors"
 )
 
 var (
-	addon   = hub.Addon
-	HomeDir = ""
+	addon = hub.Addon
+	Dir   = ""
 )
 
 func init() {
-	HomeDir, _ = os.UserHomeDir()
+	Dir, _ = os.Getwd()
 }
 
 type Remote = api.Repository
 
 // New SCM repository factory.
-func New(destDir string, remote *Remote, identities []api.Ref) (r SCM, err error) {
+// Options:
+// - *api.Ref
+// - api.Ref
+// - *api.Identity
+// - api.Identity
+func New(destDir string, remote *Remote, option ...any) (r SCM, err error) {
 	var insecure bool
 	switch remote.Kind {
 	case "subversion":
@@ -30,7 +36,6 @@ func New(destDir string, remote *Remote, identities []api.Ref) (r SCM, err error
 		svn := &Subversion{}
 		svn.Path = destDir
 		svn.Remote = *remote
-		svn.Identities = identities
 		svn.Insecure = insecure
 		r = svn
 	default:
@@ -41,11 +46,19 @@ func New(destDir string, remote *Remote, identities []api.Ref) (r SCM, err error
 		git := &Git{}
 		git.Path = destDir
 		git.Remote = *remote
-		git.Identities = identities
 		git.Insecure = insecure
 		r = git
 	}
 	err = r.Validate()
+	if err != nil {
+		return
+	}
+	for _, opt := range option {
+		err = r.Use(opt)
+		if err != nil {
+			return
+		}
+	}
 	return
 }
 
@@ -56,27 +69,47 @@ type SCM interface {
 	Branch(ref string) (err error)
 	Commit(files []string, msg string) (err error)
 	Head() (commit string, err error)
+	Use(option any) (err error)
 }
 
 // Authenticated repository.
 type Authenticated struct {
-	Identities []api.Ref
-	Insecure   bool
+	Identity api.Identity
+	Insecure bool
 }
 
-// FindIdentity by kind.
-func (r *Authenticated) findIdentity(kind string) (matched *api.Identity, found bool, err error) {
-	for _, ref := range r.Identities {
-		identity, nErr := addon.Identity.Get(ref.ID)
-		if nErr != nil {
-			err = nErr
+// Use option.
+// Options:
+// - *api.Ref
+// - api.Ref
+// - *api.Identity
+// - api.Identity
+func (a *Authenticated) Use(option any) (err error) {
+	var id *api.Identity
+	switch opt := option.(type) {
+	case *api.Ref:
+		if opt == nil {
 			return
 		}
-		if identity.Kind == kind {
-			found = true
-			matched = identity
-			break
+		id, err = addon.Identity.Get(opt.ID)
+		if err != nil {
+			return
 		}
+		a.Identity = *id
+	case api.Ref:
+		id, err = addon.Identity.Get(opt.ID)
+		if err != nil {
+			return
+		}
+		a.Identity = *id
+	case *api.Identity:
+		if opt != nil {
+			a.Identity = *opt
+		}
+	case api.Identity:
+		a.Identity = opt
+	default:
+		err = errors.Errorf("Invalid option: %T", opt)
 	}
 	return
 }

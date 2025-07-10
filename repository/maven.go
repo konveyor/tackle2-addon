@@ -43,18 +43,16 @@ func (r *Maven) CreateSettingsFile() (path string, err error) {
 			path)
 		return
 	}
-	defer f.Close()
-	id, found, err := r.findIdentity("maven")
-	if err != nil {
-		return
-	}
+	defer func() {
+		_ = f.Close()
+	}()
 	var settingsXML mxj.Map
-	if found {
+	if r.Identity.ID != 0 {
 		addon.Activity(
 			"[MVN] Using credentials (id=%d) %s.",
-			id.ID,
-			id.Name)
-		settingsXML, err = mxj.NewMapXml([]byte(id.Settings))
+			r.Identity.ID,
+			r.Identity.Name)
+		settingsXML, err = mxj.NewMapXml([]byte(r.Identity.Settings))
 		if err != nil {
 			err = liberr.Wrap(err)
 			return

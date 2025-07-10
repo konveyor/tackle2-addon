@@ -3,9 +3,11 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"hash/fnv"
 	urllib "net/url"
 	"os"
 	pathlib "path"
+	"strconv"
 	"strings"
 
 	liberr "github.com/jortel/go-utils/error"
@@ -42,34 +44,34 @@ func (r *Git) Validate() (err error) {
 // Fetch clones the repository.
 func (r *Git) Fetch() (err error) {
 	url := r.URL()
+	addon.Activity("[GIT] Home (directory): %s", r.home())
 	addon.Activity("[GIT] Cloning: %s", url.String())
 	_ = nas.RmDir(r.Path)
-	id, found, err := r.findIdentity("source")
-	if err != nil {
-		return
-	}
-	if found {
+	if r.Identity.ID != 0 {
 		addon.Activity(
 			"[GIT] Using credentials (id=%d) %s.",
-			id.ID,
-			id.Name)
-	} else {
-		id = &api.Identity{}
+			r.Identity.ID,
+			r.Identity.Name)
+	}
+	err = nas.MkDir(r.home(), 0755)
+	if err != nil {
+		err = liberr.Wrap(err)
+		return
 	}
 	err = r.writeConfig()
 	if err != nil {
 		return
 	}
-	err = r.writeCreds(id)
+	err = r.writeCreds()
 	if err != nil {
 		return
 	}
 	agent := ssh.Agent{}
-	err = agent.Add(id, url.Host)
+	err = agent.Add(&r.Identity, url.Host)
 	if err != nil {
 		return
 	}
-	cmd := command.New("/usr/bin/git")
+	cmd := r.git()
 	cmd.Options.Add("clone")
 	cmd.Options.Add("--depth", "1")
 	if r.Remote.Branch != "" {
@@ -87,7 +89,7 @@ func (r *Git) Fetch() (err error) {
 
 // Branch creates a branch with the given name if not exist and switch to it.
 func (r *Git) Branch(ref string) (err error) {
-	cmd := command.New("/usr/bin/git")
+	cmd := r.git()
 	cmd.Dir = r.Path
 	cmd.Options.Add("checkout", ref)
 	err = cmd.Run()
@@ -97,15 +99,17 @@ func (r *Git) Branch(ref string) (err error) {
 		cmd.Options.Add("checkout", "-b", ref)
 	}
 	r.Remote.Branch = ref
-	return cmd.Run()
+	err = cmd.Run()
+	return
 }
 
 // addFiles adds files to staging area.
 func (r *Git) addFiles(files []string) (err error) {
-	cmd := command.New("/usr/bin/git")
+	cmd := r.git()
 	cmd.Dir = r.Path
 	cmd.Options.Add("add", files...)
-	return cmd.Run()
+	err = cmd.Run()
+	return
 }
 
 // Commit files and push to remote.
@@ -114,20 +118,22 @@ func (r *Git) Commit(files []string, msg string) (err error) {
 	if err != nil {
 		return err
 	}
-	cmd := command.New("/usr/bin/git")
+	cmd := r.git()
 	cmd.Dir = r.Path
 	cmd.Options.Add("commit")
-	cmd.Options.Add("--message", msg)
+	cmd.Options.Add("--allow-empty")
+	cmd.Options.Add("-m", msg)
 	err = cmd.Run()
 	if err != nil {
 		return err
 	}
-	return r.push()
+	err = r.push()
+	return
 }
 
 // Head returns HEAD commit.
 func (r *Git) Head() (commit string, err error) {
-	cmd := command.New("/usr/bin/git")
+	cmd := r.git()
 	cmd.Dir = r.Path
 	cmd.Options.Add("rev-parse")
 	cmd.Options.Add("HEAD")
@@ -140,12 +146,25 @@ func (r *Git) Head() (commit string, err error) {
 	return
 }
 
+// git returns git command.
+func (r *Git) git() (cmd *command.Command) {
+	cmd = command.New("/usr/bin/git")
+	cmd.Env = append(
+		os.Environ(),
+		"GIT_TERMINAL_PROMPT=0",
+		"GIT_TRACE_SETUP=1",
+		"GIT_TRACE=1",
+		"HOME="+r.home())
+	return
+}
+
 // push changes to remote.
 func (r *Git) push() (err error) {
-	cmd := command.New("/usr/bin/git")
+	cmd := r.git()
 	cmd.Dir = r.Path
-	cmd.Options.Add("push", "--set-upstream", "origin", r.Remote.Branch)
-	return cmd.Run()
+	cmd.Options.Add("push", "origin", "HEAD")
+	err = cmd.Run()
+	return
 }
 
 // URL returns the parsed URL.
@@ -157,11 +176,7 @@ func (r *Git) URL() (u GitURL) {
 
 // writeConfig writes config file.
 func (r *Git) writeConfig() (err error) {
-	path := pathlib.Join(HomeDir, ".gitconfig")
-	found, err := nas.Exists(path)
-	if found || err != nil {
-		return
-	}
+	path := pathlib.Join(r.home(), ".gitconfig")
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
@@ -170,7 +185,6 @@ func (r *Git) writeConfig() (err error) {
 			path)
 		return
 	}
-
 	proxy, err := r.proxy()
 	if err != nil {
 		return
@@ -179,7 +193,9 @@ func (r *Git) writeConfig() (err error) {
 	s += "name = Konveyor Dev\n"
 	s += "email = konveyor-dev@googlegroups.com\n"
 	s += "[credential]\n"
-	s += "helper = store\n"
+	s += "helper = store --file="
+	s += pathlib.Join(r.home(), ".git-credentials")
+	s += "\n"
 	s += "[http]\n"
 	s += fmt.Sprintf("sslVerify = %t\n", !r.Insecure)
 	if proxy != "" {
@@ -198,15 +214,11 @@ func (r *Git) writeConfig() (err error) {
 }
 
 // writeCreds writes credentials (store) file.
-func (r *Git) writeCreds(id *api.Identity) (err error) {
-	if id.User == "" || id.Password == "" {
+func (r *Git) writeCreds() (err error) {
+	if r.Identity.User == "" || r.Identity.Password == "" {
 		return
 	}
-	path := pathlib.Join(HomeDir, ".git-credentials")
-	found, err := nas.Exists(path)
-	if found || err != nil {
-		return
-	}
+	path := pathlib.Join(r.home(), ".git-credentials")
 	f, err := os.Create(path)
 	if err != nil {
 		err = liberr.Wrap(
@@ -222,12 +234,12 @@ func (r *Git) writeCreds(id *api.Identity) (err error) {
 	} {
 		entry := scheme
 		entry += "://"
-		if id.User != "" {
-			entry += id.User
+		if r.Identity.User != "" {
+			entry += r.Identity.User
 			entry += ":"
 		}
-		if id.Password != "" {
-			entry += id.Password
+		if r.Identity.Password != "" {
+			entry += r.Identity.Password
 			entry += "@"
 		}
 		entry += url.Host
@@ -307,9 +319,22 @@ func (r *Git) checkout() (err error) {
 		_ = os.Chdir(dir)
 	}()
 	_ = os.Chdir(r.Path)
-	cmd := command.New("/usr/bin/git")
+	cmd := r.git()
 	cmd.Options.Add("checkout", branch)
 	err = cmd.Run()
+	return
+}
+
+// home returns the Git home directory path.
+func (r *Git) home() (home string) {
+	h := fnv.New32a()
+	_, _ = h.Write([]byte(r.Remote.URL))
+	n := h.Sum32()
+	digest := strconv.FormatUint(uint64(n), 16)
+	home = pathlib.Join(
+		Dir,
+		".git",
+		digest)
 	return
 }
 
