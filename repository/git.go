@@ -222,12 +222,12 @@ func (r *Git) writeCreds(id *api.Identity) (err error) {
 	} {
 		entry := scheme
 		entry += "://"
-		if r.Identity.User != "" {
-			entry += urllib.QueryEscape(r.Identity.User)
+		if id.User != "" {
+			entry += urllib.QueryEscape(id.User)
 			entry += ":"
 		}
-		if r.Identity.Password != "" {
-			entry += urllib.QueryEscape(r.Identity.Password)
+		if id.Password != "" {
+			entry += urllib.QueryEscape(id.Password)
 			entry += "@"
 		}
 		entry += url.Host
