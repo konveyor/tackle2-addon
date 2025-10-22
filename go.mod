@@ -6,11 +6,10 @@ toolchain go1.22.0
 
 require (
 	github.com/go-logr/logr v1.4.1
-	github.com/jortel/go-utils v0.1.4
 	github.com/konveyor/tackle2-hub v0.7.0-alpha.2.0.20250603155042-56f863e431f6
 )
 
-replace github.com/konveyor/tackle2-hub => github.com/jortel/tackle2-hub v0.0.0-20251022222254-efaebb99c95b
+replace github.com/konveyor/tackle2-hub => github.com/jortel/tackle2-hub v0.0.0-20251022233505-724e8eabf07e
 
 require (
 	github.com/Nerzal/gocloak/v13 v13.9.0 // indirect
@@ -53,6 +52,7 @@ require (
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
+	github.com/jortel/go-utils v0.1.4 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect

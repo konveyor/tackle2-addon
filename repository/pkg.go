@@ -2,6 +2,7 @@ package repository
 
 import (
 	"os"
+	"path"
 
 	"github.com/konveyor/tackle2-addon/logging"
 	hub "github.com/konveyor/tackle2-hub/addon"
@@ -39,7 +40,7 @@ func New(destDir string, remote *Remote, option ...any) (r SCM, err error) {
 			return
 		}
 		svn := &Subversion{}
-		svn.HomeRoot = Dir
+		svn.Home = path.Join(Dir, svn.Id())
 		svn.Path = destDir
 		svn.Remote = *remote
 		svn.Insecure = insecure
@@ -50,7 +51,7 @@ func New(destDir string, remote *Remote, option ...any) (r SCM, err error) {
 			return
 		}
 		git := &Git{}
-		git.HomeRoot = Dir
+		git.Home = path.Join(Dir, git.Id())
 		git.Path = destDir
 		git.Remote = *remote
 		git.Insecure = insecure
