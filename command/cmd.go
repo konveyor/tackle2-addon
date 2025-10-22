@@ -51,7 +51,7 @@ func (r *Command) Run() (err error) {
 func (r *Command) RunWith(ctx context.Context) (err error) {
 	writer := &Writer{}
 	writer.reporter = &r.Reporter
-	r.Writer = &Writer{}
+	r.Writer = writer
 	output := path.Base(r.Path) + ".output"
 	r.Reporter.file, err = addon.File.Touch(output)
 	if err != nil {
