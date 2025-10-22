@@ -9,7 +9,7 @@ require (
 	github.com/konveyor/tackle2-hub v0.7.0-alpha.2.0.20250603155042-56f863e431f6
 )
 
-replace github.com/konveyor/tackle2-hub => github.com/jortel/tackle2-hub v0.0.0-20251022233505-724e8eabf07e
+replace github.com/konveyor/tackle2-hub => github.com/jortel/tackle2-hub v0.0.0-20251022235344-c4baaa70c079
 
 require (
 	github.com/Nerzal/gocloak/v13 v13.9.0 // indirect
