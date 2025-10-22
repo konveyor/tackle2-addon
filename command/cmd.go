@@ -34,7 +34,7 @@ func New(path string) (cmd *Command) {
 // Command execution.
 type Command struct {
 	hubcmd.Command
-	reporter Reporter
+	Reporter Reporter
 }
 
 // Run executes the command.
@@ -50,21 +50,21 @@ func (r *Command) Run() (err error) {
 // task Report.Activity.
 func (r *Command) RunWith(ctx context.Context) (err error) {
 	writer := &Writer{}
-	writer.reporter = &r.reporter
+	writer.reporter = &r.Reporter
 	r.Writer = &Writer{}
 	output := path.Base(r.Path) + ".output"
-	r.reporter.file, err = addon.File.Touch(output)
+	r.Reporter.file, err = addon.File.Touch(output)
 	if err != nil {
 		return
 	}
-	r.reporter.Run(r.Path, r.Options)
-	addon.Attach(r.reporter.file)
+	r.Reporter.Run(r.Path, r.Options)
+	addon.Attach(r.Reporter.file)
 	defer func() {
 		writer.End()
 		if err != nil {
-			r.reporter.Error(r.Path, err, writer.buffer)
+			r.Reporter.Error(r.Path, err, writer.buffer)
 		} else {
-			r.reporter.Succeeded(r.Path, writer.buffer)
+			r.Reporter.Succeeded(r.Path, writer.buffer)
 		}
 	}()
 	err = r.Command.RunWith(ctx)
