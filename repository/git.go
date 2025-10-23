@@ -152,8 +152,6 @@ func (r *Git) git() (cmd *command.Command) {
 	cmd.Env = append(
 		os.Environ(),
 		"GIT_TERMINAL_PROMPT=0",
-		"GIT_TRACE_SETUP=1",
-		"GIT_TRACE=1",
 		"HOME="+r.home())
 	return
 }
