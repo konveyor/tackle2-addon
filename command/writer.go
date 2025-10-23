@@ -1,6 +1,7 @@
 package command
 
 import (
+	"fmt"
 	"io"
 	"time"
 )
@@ -49,6 +50,28 @@ func (w *Writer) Read(p []byte) (n int, err error) {
 	}
 	n = copy(p, w.buffer[w.read:])
 	w.read += n
+	return
+}
+
+// Seek to read position.
+// Provides io.Seeker.
+func (w *Writer) Seek(offset int64, whence int) (n int64, err error) {
+	switch whence {
+	case io.SeekStart:
+		n = offset
+	case io.SeekCurrent:
+		n = int64(w.read) + offset
+	case io.SeekEnd:
+		n = int64(len(w.buffer)) + offset
+	default:
+		err = fmt.Errorf("whence not valid: %d", whence)
+		return
+	}
+	if n < 0 || n > int64(len(w.buffer)) {
+		err = fmt.Errorf("out of bounds")
+		return
+	}
+	w.read = int(n)
 	return
 }
 
