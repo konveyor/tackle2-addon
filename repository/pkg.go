@@ -5,9 +5,8 @@ import (
 	"path"
 
 	"github.com/konveyor/tackle2-addon/command"
-	"github.com/konveyor/tackle2-addon/logging"
+	"github.com/konveyor/tackle2-addon/sink"
 	hub "github.com/konveyor/tackle2-hub/addon"
-	hubcmd "github.com/konveyor/tackle2-hub/command"
 	hubscm "github.com/konveyor/tackle2-hub/scm"
 )
 
@@ -18,8 +17,7 @@ var (
 
 func init() {
 	Dir, _ = os.Getwd()
-	hubcmd.Log = logging.New()
-	hubscm.Log = logging.New()
+	hubscm.Log = hubscm.Log.WithSink(sink.New(true))
 }
 
 type Remote = hubscm.Remote

@@ -1,4 +1,4 @@
-package logging
+package sink
 
 import (
 	"fmt"
@@ -12,18 +12,20 @@ var (
 	addon = hub.Addon
 )
 
-func New() logr.Logger {
-	return logr.Logger{}.WithSink(&Sink{})
+func New(enabled bool) logr.LogSink {
+	return &Sink{enabled: enabled}
 }
 
 // Sink used to bridge a Logger to the addon.Activity.
-type Sink struct{}
+type Sink struct{
+	enabled bool
+}
 
 func (s *Sink) Init(_ logr.RuntimeInfo) {
 }
 
 func (s *Sink) Enabled(_ int) (enabled bool) {
-	enabled = true
+	enabled = s.enabled
 	return
 }
 

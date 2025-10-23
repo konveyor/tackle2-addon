@@ -9,7 +9,7 @@ import (
 
 	"path"
 
-	"github.com/konveyor/tackle2-addon/logging"
+	"github.com/konveyor/tackle2-addon/sink"
 	hub "github.com/konveyor/tackle2-hub/addon"
 	"github.com/konveyor/tackle2-hub/command"
 )
@@ -19,7 +19,7 @@ var (
 )
 
 func init() {
-	command.Log = logging.New()
+	command.Log = command.Log.WithSink(sink.New(false))
 }
 
 type Options = command.Options
