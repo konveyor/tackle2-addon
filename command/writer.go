@@ -61,6 +61,11 @@ func (w *Writer) End() {
 	w.end = nil
 }
 
+// Reporter returns the reporter.
+func (w *Writer) Reporter() *Reporter {
+	return w.reporter
+}
+
 // report in task Report.Activity.
 // Rate limited.
 func (w *Writer) report() {
