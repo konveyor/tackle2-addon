@@ -14,7 +14,9 @@ const (
 	MinBackoff = Backoff
 )
 
-// Writer records command output.
+// Writer reports command output.
+// Provides both io.Reader and io.Writer.
+// Command output is buffered (rate-limited) and reported.
 type Writer struct {
 	reporter *Reporter
 	buffer   []byte

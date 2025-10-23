@@ -30,10 +30,6 @@ func init() {
 }
 
 // New SCM repository factory.
-// Options:
-// - Insecure
-// - *api.Identity
-// - api.Identity
 func New(destDir string, remote *Remote, option ...any) (r SCM, err error) {
 	var insecure bool
 	switch remote.Kind {

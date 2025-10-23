@@ -17,7 +17,7 @@ func New(enabled bool) logr.LogSink {
 }
 
 // Sink used to bridge a Logger to the addon.Activity.
-type Sink struct{
+type Sink struct {
 	enabled bool
 }
 
@@ -43,14 +43,12 @@ func (s *Sink) Error(err error, msg string, kv ...any) {
 	return
 }
 
-func (s *Sink) WithValues(_ ...any) (sink logr.LogSink) {
-	sink = s
-	return
+func (s *Sink) WithValues(_ ...any) logr.LogSink {
+	return s
 }
 
-func (s *Sink) WithName(_ string) (sink logr.LogSink) {
-	sink = s
-	return
+func (s *Sink) WithName(_ string) logr.LogSink {
+	return s
 }
 
 func (s *Sink) join(m string, kv ...any) (joined string) {
