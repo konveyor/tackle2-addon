@@ -1,6 +1,7 @@
 package command
 
 import (
+	"io"
 	"time"
 )
 
@@ -20,6 +21,7 @@ type Writer struct {
 	backoff  time.Duration
 	end      chan any
 	ended    chan any
+	read     int
 }
 
 // Write command output.
@@ -34,6 +36,17 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 			go w.report()
 		}
 	}
+	return
+}
+
+// Read the buffer.
+func (w *Writer) Read(p []byte) (n int, err error) {
+	if w.read >= len(w.buffer) {
+		err = io.EOF
+		return
+	}
+	n = copy(p, w.buffer[w.read:])
+	w.read += n
 	return
 }
 

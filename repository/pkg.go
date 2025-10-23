@@ -4,6 +4,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/konveyor/tackle2-addon/command"
 	"github.com/konveyor/tackle2-addon/logging"
 	hub "github.com/konveyor/tackle2-hub/addon"
 	hubcmd "github.com/konveyor/tackle2-hub/command"
@@ -25,6 +26,10 @@ type Remote = hubscm.Remote
 type SCM = hubscm.SCM
 type Subversion = hubscm.Subversion
 type Git = hubscm.Git
+
+func init() {
+	hubscm.NewCommand = command.New
+}
 
 // New SCM repository factory.
 // Options:
