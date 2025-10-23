@@ -18,7 +18,7 @@ const (
 	LiveOutput = 1
 )
 
-// Reporter activity reporter.
+// Reporter provides integration with the task Report.Activity.
 type Reporter struct {
 	Verbosity int
 	file      *api.File
