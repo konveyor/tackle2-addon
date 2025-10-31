@@ -1,4 +1,4 @@
-package repository
+package scm
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 	"github.com/konveyor/tackle2-addon/command"
 	"github.com/konveyor/tackle2-addon/sink"
 	hub "github.com/konveyor/tackle2-hub/addon"
-	hubscm "github.com/konveyor/tackle2-hub/scm"
+	scm "github.com/konveyor/tackle2-hub/scm"
 )
 
 var (
@@ -17,16 +17,16 @@ var (
 
 func init() {
 	Dir, _ = os.Getwd()
-	hubscm.Log = hubscm.Log.WithSink(sink.New(true))
+	scm.Log = scm.Log.WithSink(sink.New(true))
 }
 
-type Remote = hubscm.Remote
-type SCM = hubscm.SCM
-type Subversion = hubscm.Subversion
-type Git = hubscm.Git
+type Remote = scm.Remote
+type SCM = scm.SCM
+type Subversion = scm.Subversion
+type Git = scm.Git
 
 func init() {
-	hubscm.NewCommand = command.New
+	scm.NewCommand = command.New
 }
 
 // New SCM repository factory.

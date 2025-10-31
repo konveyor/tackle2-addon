@@ -4,7 +4,7 @@ GOIMPORTS = $(GOBIN)/goimports
 
 PKG = ./cmd/... \
       ./command/... \
-      ./repository/... \
+      ./scm/... \
       ./ssh/...
 
 PKGDIR = $(subst /...,,$(PKG))
