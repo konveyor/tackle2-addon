@@ -6,7 +6,8 @@ toolchain go1.22.0
 
 require (
 	github.com/go-logr/logr v1.4.1
-	github.com/konveyor/tackle2-hub v0.8.1-alpha.2.0.20251031162728-9244b63a0ad1
+	github.com/konveyor/tackle2-hub v0.9.0-alpha.1.0.20251119200427-dbd77d2e1a07
+	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
 )
 
 require (
@@ -50,7 +51,7 @@ require (
 	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/jortel/go-utils v0.1.4 // indirect
+	github.com/jortel/go-utils v0.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
@@ -98,7 +99,6 @@ require (
 	gopkg.in/op/go-logging.v1 v1.0.0-20160211212156-b2cb9fa56473 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55 // indirect
 	k8s.io/api v0.25.0 // indirect
 	k8s.io/apimachinery v0.25.0 // indirect
 	k8s.io/client-go v0.25.0 // indirect

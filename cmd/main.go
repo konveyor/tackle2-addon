@@ -9,5 +9,5 @@ import (
 func main() {
 	_ = command.New("")
 	_ = ssh.Agent{}
-	_, _ = scm.New("", nil)
+	_, _ = scm.New("", nil, nil)
 }

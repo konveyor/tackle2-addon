@@ -44,9 +44,9 @@ func New(p string) (cmd *command.Command) {
 	cmd.End = func() {
 		writer.End()
 		if cmd.Error != nil {
-			reporter.Error(cmd.Path, cmd.Error, writer.buffer)
+			reporter.Error(cmd.Path, cmd.Error, writer.Bytes())
 		} else {
-			reporter.Succeeded(cmd.Path, writer.buffer)
+			reporter.Succeeded(cmd.Path, writer.Bytes())
 		}
 	}
 	return

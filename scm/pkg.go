@@ -7,7 +7,8 @@ import (
 	"github.com/konveyor/tackle2-addon/command"
 	"github.com/konveyor/tackle2-addon/sink"
 	hub "github.com/konveyor/tackle2-hub/addon"
-	scm "github.com/konveyor/tackle2-hub/scm"
+	"github.com/konveyor/tackle2-hub/api"
+	"github.com/konveyor/tackle2-hub/scm"
 )
 
 var (
@@ -20,8 +21,11 @@ func init() {
 	scm.Log = scm.Log.WithSink(sink.New(true))
 }
 
-type Remote = scm.Remote
 type SCM = scm.SCM
+type Remote = scm.Remote
+type Identity = scm.Identity
+type ProxyMap = scm.ProxyMap
+type Proxy = scm.Proxy
 type Subversion = scm.Subversion
 type Git = scm.Git
 
@@ -30,41 +34,90 @@ func init() {
 }
 
 // New SCM repository factory.
-func New(destDir string, remote *Remote, option ...any) (r SCM, err error) {
-	var insecure bool
+func New(destDir string, repository *api.Repository, identity *api.Identity) (r SCM, err error) {
+	remote := scm.Remote{
+		Kind:   repository.Kind,
+		URL:    repository.URL,
+		Branch: repository.Branch,
+		Path:   repository.Path,
+	}
+	if identity != nil {
+		remote.Identity = &Identity{
+			ID:       identity.ID,
+			Name:     identity.Name,
+			User:     identity.User,
+			Password: identity.Password,
+			Key:      identity.Key,
+		}
+	}
 	switch remote.Kind {
 	case "subversion":
-		insecure, err = addon.Setting.Bool("svn.insecure.enabled")
+		remote.Insecure, err = addon.Setting.Bool("svn.insecure.enabled")
 		if err != nil {
 			return
 		}
 		svn := &Subversion{}
-		svn.Home = path.Join(Dir, svn.Id())
+		svn.Remote = remote
 		svn.Path = destDir
-		svn.Remote = *remote
-		svn.Insecure = insecure
+		svn.Home = path.Join(Dir, svn.Id())
+		svn.Proxies, err = proxyMap()
+		if err != nil {
+			return
+		}
 		r = svn
 	default:
-		insecure, err = addon.Setting.Bool("git.insecure.enabled")
+		remote.Insecure, err = addon.Setting.Bool("git.insecure.enabled")
 		if err != nil {
 			return
 		}
 		git := &Git{}
-		git.Home = path.Join(Dir, git.Id())
+		git.Remote = remote
 		git.Path = destDir
-		git.Remote = *remote
-		git.Insecure = insecure
-		r = git
-	}
-	err = r.Validate()
-	if err != nil {
-		return
-	}
-	for _, opt := range option {
-		err = r.Use(opt)
+		git.Home = path.Join(Dir, git.Id())
+		git.Proxies, err = proxyMap()
 		if err != nil {
 			return
 		}
+		r = git
+	}
+	err = r.Validate()
+	return
+}
+
+// proxyMap returns a map of proxies.
+func proxyMap() (pm ProxyMap, err error) {
+	pm = make(ProxyMap)
+	list, err := addon.Proxy.List()
+	if err != nil {
+		return
+	}
+	for _, p := range list {
+		if !p.Enabled {
+			continue
+		}
+		proxy := Proxy{
+			ID:       p.ID,
+			Kind:     p.Kind,
+			Host:     p.Host,
+			Port:     p.Port,
+			Excluded: p.Excluded,
+		}
+		if p.Identity == nil {
+			continue
+		}
+		var identity *api.Identity
+		identity, err = addon.Identity.Get(p.ID)
+		if err != nil {
+			return
+		}
+		proxy.Identity = &Identity{
+			ID:       identity.ID,
+			Name:     identity.Name,
+			User:     identity.User,
+			Password: identity.Password,
+			Key:      identity.Key,
+		}
+		pm[p.Kind] = proxy
 	}
 	return
 }
