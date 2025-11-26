@@ -106,7 +106,7 @@ func proxyMap() (pm ProxyMap, err error) {
 			continue
 		}
 		var identity *api.Identity
-		identity, err = addon.Identity.Get(p.ID)
+		identity, err = addon.Identity.Get(p.Identity.ID)
 		if err != nil {
 			return
 		}
