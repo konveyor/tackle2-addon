@@ -1,10 +1,12 @@
 package command
 
 import (
-	"fmt"
-	"io"
 	"time"
+
+	"github.com/konveyor/tackle2-hub/command"
 )
+
+type Buffer = command.Buffer
 
 const (
 	// Backoff rate increment.
@@ -19,18 +21,19 @@ const (
 // Provides both io.Reader and io.Writer.
 // Command output is buffered (rate-limited) and reported.
 type Writer struct {
+	Buffer
 	reporter *Reporter
-	buffer   []byte
 	backoff  time.Duration
 	end      chan any
 	ended    chan any
-	read     int
 }
 
 // Write command output.
 func (w *Writer) Write(p []byte) (n int, err error) {
-	n = len(p)
-	w.buffer = append(w.buffer, p...)
+	n, err = w.Buffer.Write(p)
+	if err != nil {
+		return
+	}
 	switch w.reporter.Verbosity {
 	case LiveOutput:
 		if w.ended == nil {
@@ -39,39 +42,6 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 			go w.report()
 		}
 	}
-	return
-}
-
-// Read the buffer.
-func (w *Writer) Read(p []byte) (n int, err error) {
-	if w.read >= len(w.buffer) {
-		err = io.EOF
-		return
-	}
-	n = copy(p, w.buffer[w.read:])
-	w.read += n
-	return
-}
-
-// Seek to read position.
-// Provides io.Seeker.
-func (w *Writer) Seek(offset int64, whence int) (n int64, err error) {
-	switch whence {
-	case io.SeekStart:
-		n = offset
-	case io.SeekCurrent:
-		n = int64(w.read) + offset
-	case io.SeekEnd:
-		n = int64(len(w.buffer)) + offset
-	default:
-		err = fmt.Errorf("whence not valid: %d", whence)
-		return
-	}
-	if n < 0 || n > int64(len(w.buffer)) {
-		err = fmt.Errorf("out of bounds")
-		return
-	}
-	w.read = int(n)
 	return
 }
 
@@ -102,7 +72,7 @@ func (w *Writer) report() {
 			ended = true
 		case <-time.After(w.backoff):
 		}
-		n := w.reporter.Output(w.buffer)
+		n := w.reporter.Output(w.Bytes())
 		w.adjustBackoff(n)
 		if ended && n == 0 {
 			break
