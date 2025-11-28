@@ -102,20 +102,19 @@ func proxyMap() (pm ProxyMap, err error) {
 			Port:     p.Port,
 			Excluded: p.Excluded,
 		}
-		if p.Identity == nil {
-			continue
-		}
-		var identity *api.Identity
-		identity, err = addon.Identity.Get(p.Identity.ID)
-		if err != nil {
-			return
-		}
-		proxy.Identity = &Identity{
-			ID:       identity.ID,
-			Name:     identity.Name,
-			User:     identity.User,
-			Password: identity.Password,
-			Key:      identity.Key,
+		if p.Identity != nil {
+			var identity *api.Identity
+			identity, err = addon.Identity.Get(p.Identity.ID)
+			if err != nil {
+				return
+			}
+			proxy.Identity = &Identity{
+				ID:       identity.ID,
+				Name:     identity.Name,
+				User:     identity.User,
+				Password: identity.Password,
+				Key:      identity.Key,
+			}
 		}
 		pm[p.Kind] = proxy
 	}
