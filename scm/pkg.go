@@ -34,7 +34,7 @@ func init() {
 }
 
 // New SCM repository factory.
-func New(destDir string, repository *api.Repository, identity *api.Identity) (r SCM, err error) {
+func New(destDir string, repository api.Repository, identity *api.Identity) (r SCM, err error) {
 	remote := scm.Remote{
 		Kind:   repository.Kind,
 		URL:    repository.URL,
