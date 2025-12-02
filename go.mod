@@ -6,7 +6,7 @@ toolchain go1.22.0
 
 require (
 	github.com/go-logr/logr v1.4.1
-	github.com/konveyor/tackle2-hub v0.9.0-alpha.1.0.20251201140238-d91e19c75c6d
+	github.com/konveyor/tackle2-hub v0.9.0-alpha.1.0.20251202133231-c937c30f820f
 )
 
 require (
