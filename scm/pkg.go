@@ -59,7 +59,7 @@ func New(destDir string, repository api.Repository, identity *api.Identity) (r S
 		svn := &Subversion{}
 		svn.Remote = remote
 		svn.Path = destDir
-		svn.Home = path.Join(Dir, svn.Id())
+		svn.Home = path.Join(Dir, ".svn", svn.Id())
 		svn.Proxies, err = proxyMap()
 		if err != nil {
 			return
@@ -73,7 +73,7 @@ func New(destDir string, repository api.Repository, identity *api.Identity) (r S
 		git := &Git{}
 		git.Remote = remote
 		git.Path = destDir
-		git.Home = path.Join(Dir, git.Id())
+		git.Home = path.Join(Dir, ".git", git.Id())
 		git.Proxies, err = proxyMap()
 		if err != nil {
 			return
