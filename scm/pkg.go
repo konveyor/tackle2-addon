@@ -3,6 +3,7 @@ package scm
 import (
 	"os"
 	"path"
+	"strings"
 
 	"github.com/konveyor/tackle2-addon/command"
 	"github.com/konveyor/tackle2-addon/sink"
@@ -95,10 +96,11 @@ func proxyMap() (pm ProxyMap, err error) {
 		if !p.Enabled {
 			continue
 		}
+		host := sanitizeHost(p.Host)
 		proxy := Proxy{
 			ID:       p.ID,
 			Kind:     p.Kind,
-			Host:     p.Host,
+			Host:     host,
 			Port:     p.Port,
 			Excluded: p.Excluded,
 		}
@@ -119,4 +121,12 @@ func proxyMap() (pm ProxyMap, err error) {
 		pm[p.Kind] = proxy
 	}
 	return
+}
+
+// sanitizeHost strips scheme prefixes and trailing slashes from a proxy host.
+func sanitizeHost(host string) string {
+	host = strings.TrimPrefix(host, "http://")
+	host = strings.TrimPrefix(host, "https://")
+	host = strings.TrimRight(host, "/")
+	return host
 }
