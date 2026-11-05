@@ -1,8 +1,6 @@
 module github.com/konveyor/tackle2-addon
 
-go 1.21
-
-toolchain go1.22.0
+go 1.25.0
 
 require (
 	github.com/go-logr/logr v1.4.1
@@ -89,7 +87,7 @@ require (
 	golang.org/x/oauth2 v0.5.0 // indirect
 	golang.org/x/sys v0.19.0 // indirect
 	golang.org/x/term v0.19.0 // indirect
-	golang.org/x/text v0.15.0 // indirect
+	golang.org/x/text v0.41.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
